@@ -778,6 +778,16 @@ input::placeholder,textarea::placeholder{color:transparent!important;}
 </div></div>
 
 <div id="cloud-loading-cover" class="cloud-loading-cover"><div class="cloud-loading-box"><div class="cloud-spinner"></div><div id="cloud-loading-text">جاري فتح Haydar Pack وتحميل آخر بيانات...</div></div></div><div id="cloud-offline-banner" class="cloud-offline-banner">لا يوجد اتصال بالإنترنت — التعديل محفوظ مؤقتًا على هذا الجهاز ولم يصل إلى Google بعد.</div>
+<script>
+/* V19 emergency boot guard: never leave the app stuck on the first loading screen */
+(function(){
+  function hpForceOpen(){try{var c=document.getElementById('cloud-loading-cover'); if(c)c.classList.add('hide');}catch(e){}}
+  window.__hpForceOpen=hpForceOpen;
+  setTimeout(hpForceOpen,4500);
+  window.addEventListener('error',function(){setTimeout(hpForceOpen,300)});
+  window.addEventListener('unhandledrejection',function(){setTimeout(hpForceOpen,300)});
+})();
+</script>
 
 <div id="panic-root"></div>
 <div class="toast" id="toast"></div>
@@ -2902,23 +2912,30 @@ function openOrderDetail(id){
   var hpPwaSaving=false;
 
   function hpPwaClone(v){return JSON.parse(JSON.stringify(v||{}));}
+  function hpPwaIsValidBackendUrl(url){return /^https:\/\/script\.google\.com\/macros\/s\/[^\/]+\/exec$/.test(String(url||''));}
+  function hpPwaIsLibraryUrl(url){return /\/macros\/library\/d\//.test(String(url||''));}
   function hpPwaNormalizeBackendUrl(url){
     url=String(url||'').trim().replace(/\s+/g,'');
     if(!url)return '';
     url=url.replace(/[?#].*$/,'').replace(/\/+$/,'');
+    if(hpPwaIsLibraryUrl(url)) return '';
     var m=url.match(/^(https:\/\/script\.google\.com\/macros\/s\/[^\/]+)(?:\/(exec|dev))?$/);
     if(m)return m[1]+'/exec';
-    return url;
+    return hpPwaIsValidBackendUrl(url)?url:'';
   }
   function hpPwaBackendUrl(){
-    var u='';
-    try{u=String(localStorage.getItem(HP_PWA_BACKEND_KEY)||'').trim();}catch(e){}
-    if(!u && typeof window.HP_APPS_SCRIPT_URL==='string') u=String(window.HP_APPS_SCRIPT_URL||'').trim();
-    return hpPwaNormalizeBackendUrl(u);
+    var raw='', norm='';
+    try{raw=String(localStorage.getItem(HP_PWA_BACKEND_KEY)||'').trim();}catch(e){}
+    norm=hpPwaNormalizeBackendUrl(raw);
+    if(raw && !norm){try{localStorage.removeItem(HP_PWA_BACKEND_KEY)}catch(e){}; if(hpPwaIsLibraryUrl(raw)){try{toast('الرابط المحفوظ كان رابط Library وليس Web app /exec وتم تجاهله')}catch(_){}}}
+    if(!norm && typeof window.HP_APPS_SCRIPT_URL==='string') norm=hpPwaNormalizeBackendUrl(window.HP_APPS_SCRIPT_URL);
+    return norm;
   }
   function hpPwaSetBackendUrl(url){
-    url=hpPwaNormalizeBackendUrl(url);
-    if(url && !/^https:\/\/script\.google\.com\/macros\/s\/[^\/]+\/exec$/.test(url)){toast('رابط المزامنة غير صحيح. انسخ رابط Web app اللي آخره /exec');return false;}
+    var raw=String(url||'').trim();
+    if(hpPwaIsLibraryUrl(raw)){toast('ده رابط Library غلط. المطلوب Web app URL من Deploy → Manage deployments وآخره /exec');return false;}
+    url=hpPwaNormalizeBackendUrl(raw);
+    if(raw && !url){toast('رابط المزامنة غير صحيح. انسخ رابط Web app اللي آخره /exec');return false;}
     try{localStorage.setItem(HP_PWA_BACKEND_KEY,url);}catch(e){}
     if(typeof window.HP_APPS_SCRIPT_URL!=='undefined') window.HP_APPS_SCRIPT_URL=url;
     toast(url?'تم حفظ رابط المزامنة':'تم مسح رابط المزامنة');
@@ -3126,7 +3143,8 @@ function openOrderDetail(id){
     hpPwaUpdateUi();
     var hasLocal=false; try{hasLocal=!!localStorage.getItem(HP_LOCAL_KEY)}catch(e){}
     if(!navigator.onLine){hpPwaSetState('err',hasLocal?'أوفلاين — تم فتح آخر نسخة محفوظة على الجهاز':'أوفلاين — افتح البرنامج أونلاين مرة واحدة أولاً');return;}
-    if(hpPwaBackendUrl()) hpPwaPull(false); else hpPwaSetState('err','اضبط رابط المزامنة مرة واحدة من زر الحفظ السحابي');
+    var backend=hpPwaBackendUrl();
+    if(backend) hpPwaPull(false); else hpPwaSetState('err','رابط المزامنة غير مضبوط. لا تستخدم رابط Library؛ المطلوب Web app URL آخره /exec');
     clearInterval(HP_PWA_CHECK_TIMER); HP_PWA_CHECK_TIMER=setInterval(hpPwaCheckMeta,30000);
   };
   window.addEventListener('online',function(){hpPwaSetState('work','رجع الإنترنت — جاري المزامنة');hpPwaFlush();});
@@ -3771,7 +3789,7 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 
 
 <script>
-/* ===== HAYDAR PACK V18: boot fallback + stuck loading prevention ===== */
+/* ===== HAYDAR PACK V19: boot fallback + invalid Apps Script Library link protection ===== */
 (function(){
   function hideLoading(){try{var c=document.getElementById('cloud-loading-cover'); if(c)c.classList.add('hide');}catch(e){}}
   function bootOnce(){

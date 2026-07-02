@@ -1,3 +1,3 @@
-// رابط Google Apps Script /exec الخاص بالمزامنة
+// رابط Google Apps Script Web app /exec فقط — لا تستخدم رابط library/d
 window.HP_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw5ZRJizUCEHIAuheLcB3GsG0pP1R_jAEMjITcTrUmeKhz7Aa_1V95XRcCkwtH75tfPcw/exec';
 window.HP_GITHUB_PAGES_URL = 'https://headersobhy-code.github.io/Haydar-Pack/';
