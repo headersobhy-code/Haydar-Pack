@@ -1,5 +1,5 @@
-const HP_CACHE = 'haydar-pack-pwa-v17-import-sync-20260702';
-const HP_ASSETS = ['./','./index.html?v=17','./index.html','./config.js','./manifest.webmanifest?v=17','./manifest.webmanifest','./icon-192.png','./icon-512.png','./hp-logo-v3-192.png','./hp-logo-v3-512.png','./offline.html'];
+const HP_CACHE = 'haydar-pack-pwa-v18-boot-sync-20260702';
+const HP_ASSETS = ['./','./index.html?v=18','./index.html','./config.js','./manifest.webmanifest?v=18','./manifest.webmanifest','./icon-192.png','./icon-512.png','./hp-logo-v3-192.png','./hp-logo-v3-512.png','./offline.html'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(HP_CACHE).then(cache => cache.addAll(HP_ASSETS)).then(() => self.skipWaiting()));
 });
@@ -13,6 +13,6 @@ self.addEventListener('fetch', event => {
       const copy = response.clone();
       caches.open(HP_CACHE).then(cache => { try { cache.put(event.request, copy); } catch(e){} });
       return response;
-    }).catch(() => caches.match('./index.html?v=17').then(r => r || caches.match('./index.html')).then(r => r || caches.match('./offline.html'))))
+    }).catch(() => caches.match('./index.html?v=18').then(r => r || caches.match('./index.html')).then(r => r || caches.match('./offline.html'))))
   );
 });
