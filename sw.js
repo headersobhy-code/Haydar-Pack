@@ -1,4 +1,4 @@
-const HP_CACHE = 'haydar-pack-pwa-v19-safe-boot-20260702';
+const HP_CACHE = 'haydar-pack-pwa-v19-final-20260702';
 const HP_ASSETS = ['./','./index.html?v=19','./index.html','./config.js','./manifest.webmanifest?v=19','./manifest.webmanifest','./icon-192.png','./icon-512.png','./hp-logo-v3-192.png','./hp-logo-v3-512.png','./offline.html'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(HP_CACHE).then(cache => cache.addAll(HP_ASSETS)).then(() => self.skipWaiting()));

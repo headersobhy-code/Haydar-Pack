@@ -15,7 +15,7 @@
 <script src="config.js"></script>
 <link rel="icon" type="image/png" sizes="192x192" href="hp-logo-v3-192.png">
 <link rel="apple-touch-icon" sizes="192x192" href="hp-logo-v3-192.png">
-<link rel="manifest" href="manifest.webmanifest?v=3">
+<link rel="manifest" href="manifest.webmanifest?v=19">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
@@ -543,6 +543,12 @@ input::placeholder,textarea::placeholder{color:transparent!important;}
 }
 @media (max-width: 720px){.hp-desktop-backbar{display:none!important;}}
 
+
+
+/* ===== V19 FINAL DISPLAY GUARD ===== */
+.page:not(.active){display:none!important;visibility:hidden!important;}
+.page.active{display:block!important;visibility:visible!important;}
+.cloud-loading-cover.hide{display:none!important;}
 </style>
 </head>
 <body>
@@ -778,8 +784,22 @@ input::placeholder,textarea::placeholder{color:transparent!important;}
 </div></div>
 
 <div id="cloud-loading-cover" class="cloud-loading-cover"><div class="cloud-loading-box"><div class="cloud-spinner"></div><div id="cloud-loading-text">جاري فتح Haydar Pack وتحميل آخر بيانات...</div></div></div><div id="cloud-offline-banner" class="cloud-offline-banner">لا يوجد اتصال بالإنترنت — التعديل محفوظ مؤقتًا على هذا الجهاز ولم يصل إلى Google بعد.</div>
+
 <script>
-/* V19 emergency boot guard: never leave the app stuck on the first loading screen */
+/* V19 FINAL fixed backend URL: always use the correct Web app /exec and remove wrong Library links */
+(function(){
+  var u='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
+  window.HP_APPS_SCRIPT_URL=u;
+  window.HP_GITHUB_PAGES_URL='https://headersobhy-code.github.io/Haydar-Pack/';
+  try{
+    var k='hayder_pack_backend_url_v10';
+    var old=String(localStorage.getItem(k)||'');
+    if(!old || /\/macros\/library\/d\//.test(old) || old!==u) localStorage.setItem(k,u);
+  }catch(e){}
+})();
+</script>
+<script>
+/* V19 FINAL emergency boot guard: never leave the app stuck on the first loading screen */
 (function(){
   function hpForceOpen(){try{var c=document.getElementById('cloud-loading-cover'); if(c)c.classList.add('hide');}catch(e){}}
   window.__hpForceOpen=hpForceOpen;
@@ -3157,7 +3177,7 @@ function openOrderDetail(id){
 /* ===== HAYDAR PACK V14: CLIENT EDIT + CLIENT DISCOUNT + CAPITAL DEFINITION + FIXED SYNC URL ===== */
 (function(){
   'use strict';
-  var HP_FIXED_BACKEND_URL='https://script.google.com/macros/s/AKfycbw5ZRJizUCEHIAuheLcB3GsG0pP1R_jAEMjITcTrUmeKhz7Aa_1V95XRcCkwtH75tfPcw/exec';
+  var HP_FIXED_BACKEND_URL='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
   var HP_GITHUB_URL='https://headersobhy-code.github.io/Haydar-Pack/';
   var HP_DEFAULT_BAG_COLOR='ابيض';
 
@@ -3789,27 +3809,47 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 
 
 <script>
-/* ===== HAYDAR PACK V19: boot fallback + invalid Apps Script Library link protection ===== */
+/* ===== HAYDAR PACK V19 FINAL: safe boot + one-page display + correct /exec link ===== */
 (function(){
-  function hideLoading(){try{var c=document.getElementById('cloud-loading-cover'); if(c)c.classList.add('hide');}catch(e){}}
+  var FIXED_URL='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
+  var BACKEND_KEY='hayder_pack_backend_url_v10';
+  function byId(id){return document.getElementById(id)}
+  function hideLoading(){try{var c=byId('cloud-loading-cover'); if(c)c.classList.add('hide');}catch(e){}}
+  function fixBackend(){
+    try{
+      window.HP_APPS_SCRIPT_URL=FIXED_URL;
+      var old=String(localStorage.getItem(BACKEND_KEY)||'');
+      if(!old || /\/macros\/library\/d\//.test(old) || old!==FIXED_URL) localStorage.setItem(BACKEND_KEY,FIXED_URL);
+    }catch(e){}
+  }
+  function ensureOnePage(){
+    try{
+      var pages=[].slice.call(document.querySelectorAll('.page'));
+      if(!pages.length)return;
+      var active=pages.find(function(p){return p.classList.contains('active')}) || byId('pg-home') || pages[0];
+      pages.forEach(function(p){p.classList.toggle('active',p===active);p.style.display=(p===active?'block':'none');p.style.visibility=(p===active?'visible':'hidden');});
+      var navs=[].slice.call(document.querySelectorAll('.nb'));
+      if(!navs.some(function(b){return b.classList.contains('active')}) && navs[0]) navs[0].classList.add('active');
+    }catch(e){}
+  }
   function bootOnce(){
-    if(window.__hpV18Booted) return;
-    window.__hpV18Booted=true;
+    if(window.__hpV19FinalBooted) return;
+    window.__hpV19FinalBooted=true;
+    fixBackend();
+    ensureOnePage();
     try{
       if(typeof window.hpCloudBoot==='function') window.hpCloudBoot();
-      else { try{ if(typeof load==='function') load(); }catch(e){} hideLoading(); }
-    }catch(e){ console.error(e); hideLoading(); try{ if(typeof toast==='function') toast('تم فتح البرنامج من آخر نسخة محفوظة على الجهاز'); }catch(_){} }
+      else if(typeof load==='function') load();
+    }catch(e){console.error(e);}
+    setTimeout(function(){ensureOnePage();hideLoading();},900);
+    setTimeout(function(){ensureOnePage();hideLoading();try{if(typeof hpPwaForceFlush==='function')hpPwaForceFlush();}catch(e){}},4500);
   }
-  window.addEventListener('error', function(e){ console.error(e && (e.error||e.message)); setTimeout(hideLoading,500); });
-  window.addEventListener('unhandledrejection', function(e){ console.error(e && e.reason); setTimeout(hideLoading,500); });
-  setTimeout(function(){
-    var c=document.getElementById('cloud-loading-cover');
-    if(c && !c.classList.contains('hide')){
-      hideLoading();
-      try{ if(typeof toast==='function') toast('تم فتح البرنامج من آخر نسخة محفوظة — تحقق من المزامنة بعد الفتح'); }catch(e){}
-    }
-  },9000);
+  window.hpV19FixDisplay=ensureOnePage;
+  window.hpV19FixBackend=fixBackend;
+  window.addEventListener('error',function(e){console.error(e&&(e.error||e.message));setTimeout(function(){ensureOnePage();hideLoading();},300);});
+  window.addEventListener('unhandledrejection',function(e){console.error(e&&e.reason);setTimeout(function(){ensureOnePage();hideLoading();},300);});
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){setTimeout(bootOnce,0)}); else setTimeout(bootOnce,0);
+  setTimeout(function(){ensureOnePage();hideLoading();},8000);
 })();
 </script>
 </body>
