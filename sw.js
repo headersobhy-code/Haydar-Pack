@@ -1,5 +1,5 @@
-const HP_CACHE = 'haydar-pack-pwa-v25-stable-delete-doc-logo-sync';
-const HP_ASSETS = ['./','./index.html?v=25','./index.html','./config.js','./manifest.webmanifest?v=25','./manifest.webmanifest','./hp-logo-v3-192.png?v=25','./hp-logo-v3-512.png?v=25','./icon-192.png?v=25','./icon-512.png?v=25','./offline.html'];
+const HP_CACHE = 'haydar-pack-pwa-v26-doc-header-client-numbers';
+const HP_ASSETS = ['./','./index.html?v=26','./index.html','./config.js','./manifest.webmanifest?v=26','./manifest.webmanifest','./hp-logo-v3-192.png?v=26','./hp-logo-v3-512.png?v=26','./icon-192.png?v=26','./icon-512.png?v=26','./offline.html'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(HP_CACHE).then(cache => cache.addAll(HP_ASSETS)).then(() => self.skipWaiting()));
 });
@@ -13,6 +13,6 @@ self.addEventListener('fetch', event => {
       const copy = response.clone();
       caches.open(HP_CACHE).then(cache => { try { cache.put(event.request, copy); } catch(e){} });
       return response;
-    }).catch(() => caches.match('./index.html?v=25').then(r => r || caches.match('./index.html')).then(r => r || caches.match('./offline.html'))))
+    }).catch(() => caches.match('./index.html?v=26').then(r => r || caches.match('./index.html')).then(r => r || caches.match('./offline.html'))))
   );
 });
