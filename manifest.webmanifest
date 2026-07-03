@@ -2,7 +2,7 @@
   "name": "Haydar Pack",
   "short_name": "Haydar Pack",
   "description": "Haydar Pack order, clients, factories and invoices manager",
-  "start_url": "./index.html?v=12",
+  "start_url": "./index.html?v=23",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
