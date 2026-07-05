@@ -1850,12 +1850,20 @@ function openOrderDetail(id){
     if(hpPwaBackendUrl()) hpPwaPull(false); else hpPwaSetState('err','اضبط رابط المزامنة مرة واحدة من زر الحفظ السحابي');
     clearInterval(HP_PWA_CHECK_TIMER); HP_PWA_CHECK_TIMER=setInterval(hpPwaCheckMeta,30000);
   };
-  window.addEventListener('online',function(){hpPwaSetState('work','رجع الإنترنت — جاري المزامنة');hpPwaFlush();});
-  window.addEventListener('focus',hpPwaCheckMeta);
-  document.addEventListener('visibilitychange',function(){if(!document.hidden)hpPwaCheckMeta()});
+  /* V37: legacy PWA auto-sync listeners are disabled. Auto Local-First Sync is loaded from 12-sync-import.js. */
 })();
 
 
-hpCloudBoot();
-setInterval(autoRefreshCurrentMonth,60*60*1000);
-autoRefreshCurrentMonth();
+/* V37: legacy boot disabled to prevent old Google download from overwriting local unsynced changes. */
+(function(){
+  try{
+    var d=localStorage.getItem('hayder_bags_app');
+    if(d) DB=JSON.parse(d);
+    if(typeof migrate==='function')migrate();
+    if(typeof reduceDBForStorage==='function')reduceDBForStorage();
+    localStorage.setItem('hayder_bags_app',JSON.stringify(DB));
+    if(typeof refreshAll==='function')refreshAll();
+  }catch(e){console.error(e)}
+  try{var c=document.getElementById('cloud-loading-cover');if(c)c.classList.add('hide')}catch(e){}
+})();
+window.HP_V37_LEGACY_BOOT_DISABLED=true;
