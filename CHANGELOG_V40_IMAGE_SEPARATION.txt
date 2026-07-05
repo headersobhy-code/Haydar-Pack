@@ -1,0 +1,19 @@
+Haydar Pack V40 - Image Separation & Sync Booster
+
+Scope:
+- Speed/protection update only.
+- Built on V39 Data Protection Lock without removing previous features.
+
+Changes:
+1) Receipts and order design images are separated from the main JSON database.
+2) New images are compressed more aggressively before saving.
+3) Main DB stores small image references only, reducing sync payload size.
+4) Images upload automatically to a separate Google Drive Images folder through Apps Script.
+5) Receipt viewer can load image from local cache first, then Google Images folder.
+6) Existing old image data is migrated out of the main DB on boot/save.
+7) Added V40 image status panel inside sync/settings.
+8) Service worker/cache bumped to v40images.
+
+Apps Script:
+- Added imagePut, imageGet, imageMeta, listImages actions.
+- Added Images folder under Hayder Pack ERP.

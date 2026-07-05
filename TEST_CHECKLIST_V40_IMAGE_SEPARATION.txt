@@ -1,0 +1,12 @@
+V40 test checklist
+
+1) Deploy Apps Script V40 first, as a new version on the same /exec URL.
+2) Upload GitHub V40 files and open ?v=40images.
+3) Confirm clients/orders/payments from V39 still appear.
+4) Open Sync page and check V39 Data Guard + V40 Image panel appear.
+5) Add a payment receipt image and save.
+6) Confirm payment stays visible and sync status finishes automatically.
+7) Press عرض الإيصال and confirm image opens.
+8) Add/edit order with design image and confirm order saves.
+9) Open Apps Script setup/status if needed and confirm Images folder is created.
+10) Do not use old ?v=37autosync or ?v=38emergency links after V40 is live.
