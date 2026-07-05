@@ -1,7 +1,7 @@
 V41 Test Checklist
 
 After uploading Apps Script then GitHub:
-1) Open: https://headersobhy-code.github.io/Haydar-Pack/?v=41backup
+1) Open: https://headersobhy-code.github.io/Haydar-Pack/?v=41stable
 2) Open Sync page.
 3) Confirm the visible interface shows only:
    - مزامنة وحماية الآن

@@ -71,8 +71,12 @@
 
   function ensureClientFilters(){
     var page=byId('pg-clients');if(!page)return;
-    var existing=byId('hp-v36-client-filter'); if(existing)return;
-    var old=byId('hp-stage6-client-filter'); if(old)old.remove();
+    // V41.1 stable fix: one filter bar only.
+    // If old Stage6 filter or duplicated V36 filters exist, remove them all once and rebuild one clean bar.
+    var all=[].slice.call(page.querySelectorAll('#hp-v36-client-filter,#hp-stage6-client-filter,.hp-stage6-filter'));
+    var cleanOne=(all.length===1 && all[0].id==='hp-v36-client-filter');
+    if(cleanOne)return;
+    all.forEach(function(el){try{el.remove()}catch(e){}});
     var search=page.querySelector('.search-wrap');
     var html='<div id="hp-v36-client-filter" class="hp-stage6-filter"><div class="chips"><button class="chip active" data-f="all">كل العملاء</button><button class="chip" data-f="due">عليه باقي</button><button class="chip" data-f="paid">حسابه منتهي</button><button class="chip" data-f="credit">له رصيد</button></div><div class="chips"><button class="chip active" data-s="activity">الأحدث حركة</button><button class="chip" data-s="number">رقم العميل</button><button class="chip" data-s="name">الاسم</button><button class="chip" data-s="balance">أكبر مديونية</button><button class="chip" data-s="profit">أعلى ربح</button></div></div>';
     if(search)search.insertAdjacentHTML('afterend',html);else page.insertAdjacentHTML('afterbegin',html);

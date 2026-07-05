@@ -1,0 +1,9 @@
+Test V41.1 Stable Fix
+
+1) Open https://headersobhy-code.github.io/Haydar-Pack/?v=41stable
+2) Clients page opens without browser freeze.
+3) Client filters appear once only.
+4) Open sync page: only Simple UI + Backup Center main buttons appear.
+5) V39 protection status remains visible through V41 panel.
+6) Backup Center opens and lists backups.
+7) No Apps Script change required.

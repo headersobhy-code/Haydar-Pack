@@ -2,15 +2,15 @@
    Scope: sync/backup UI only. Does not alter clients/orders/invoices/calculations. */
 (function(){
   'use strict';
-  var VERSION='41.0.0-backup-center';
-  var SITE_VERSION='41backup';
+  var VERSION='41.1.0-stable-ui';
+  var SITE_VERSION='41stable';
   var LOCAL_KEY='hayder_bags_app';
   var META_KEY='hayder_pack_sync_meta_v37';
   var PENDING_KEY='hayder_pack_sync_pending_v37';
   var URL_KEY='hayder_pack_stage4_backend_url_v32';
   var OLD_URL_KEY='hayder_pack_backend_url_v10';
   var FIXED_URL='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
-  var statusCache=null, loadingBackups=false, observer=null, lastAutoBackupAt=0;
+  var statusCache=null, loadingBackups=false, observer=null, lastAutoBackupAt=0, booted=false, simpleTimer=null;
 
   function $(id){return document.getElementById(id)}
   function q(sel,root){return (root||document).querySelector(sel)}
@@ -257,7 +257,9 @@
     preventOldUrl(); injectStyle(); ensureSimplePanel();
     wrapCritical('deleteClient','delete-client'); wrapCritical('deleteOrder','delete-order'); wrapCritical('triggerCloudImport','import-json');
     var oldReload=window.hpStage6HardReload; if(typeof oldReload==='function'&&!oldReload.__hpv41Wrapped){window.hpStage6HardReload=function(){try{autoSafetySnapshot('before-safe-reload-v41');throttledCloudBackup('BeforeSafeReload')}catch(e){} return oldReload.apply(this,arguments)};window.hpStage6HardReload.__hpv41Wrapped=true;}
-    setInterval(updateSimpleUI,3000);
+    if(booted)return;
+    booted=true;
+    if(!simpleTimer) simpleTimer=setInterval(updateSimpleUI,3000);
     setTimeout(function(){loadBackupStatus(false).catch(function(){})},2500);
   }
   var oldOpenSync=window.openSync;
@@ -267,9 +269,8 @@
   document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,1200)});
   window.addEventListener('load',function(){setTimeout(boot,1600)});
   setTimeout(boot,2800);
-  try{
-    observer=new MutationObserver(function(){if(q('#dr-sync.show')||q('#dr-sync.active')||$('hp-v41-sync-ui')){ensureSimplePanel();hideLegacySyncUI()}});
-    observer.observe(document.documentElement,{childList:true,subtree:true});
-  }catch(e){}
+  // V41.1 stable fix: no whole-page MutationObserver.
+  // The sync UI is created only through openSync/boot to avoid browser freezes.
+  try{ if(observer && observer.disconnect) observer.disconnect(); }catch(e){}
   window.HP_V41_BACKUP_CENTER={version:VERSION,backendUrl:backendUrl,loadStatus:loadBackupStatus,sync:window.hpV41SyncProtectNow};
 })();

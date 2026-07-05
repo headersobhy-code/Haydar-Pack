@@ -23,9 +23,9 @@ Changes:
    - Throttled cloud backup before critical operations.
 
 4) Old-version protection:
-   - Client sends appVersion=41.0.0-backup-center on database writes.
+   - Client sends appVersion=41.1.0-stable-ui on database writes.
    - Apps Script rejects database writes from old or unknown app versions.
-   - Opening old query versions is normalized to ?v=41backup.
+   - Opening old query versions is normalized to ?v=41stable.
 
 5) Existing protections preserved:
    - V39 Data Protection Lock remains active.

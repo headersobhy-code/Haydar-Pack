@@ -1,0 +1,9 @@
+V41.1 Stable UI Fix
+
+- Fixed duplicated client filters from V41 Backup UI release.
+- Disabled old Stage6 client filter injection; V36 integrity filter is the single owner.
+- Added one-filter-bar guard inside renderClients source, not by DOM watcher.
+- Removed whole-page MutationObserver from V41 Backup Center to prevent browser freeze / Wait or Exit page.
+- Made V41 boot idempotent so intervals do not stack.
+- Kept V39 Data Protection Lock, V40 Image Separation and V41 Backup Center intact.
+- GitHub only. Apps Script unchanged.

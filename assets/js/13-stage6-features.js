@@ -159,7 +159,7 @@
     openDrawer('dr-settings'); renderDeleteLogArea();
   };
   window.hpStage6HardReload=function(){
-    var base=location.href.split('?')[0]; location.href=base+'?v=41backup&safeReload='+Date.now();
+    var base=location.href.split('?')[0]; location.href=base+'?v=41stable&safeReload='+Date.now();
   };
   if(!window.manualSyncNow){
     window.manualSyncNow=function(){
@@ -177,12 +177,10 @@
   }
   function clientProfit(c){return arr(DB.orders).filter(function(o){return o.clientId===c.id}).reduce(function(s,o){return s+orderProfitSafe(o)},0)}
   function injectClientFilters(){
-    var page=byId('pg-clients'); if(!page || byId('hp-stage6-client-filter')) return;
-    var search=page.querySelector('.search-wrap');
-    var html='<div id="hp-stage6-client-filter" class="hp-stage6-filter"><div class="chips"><button class="chip active" data-f="all">كل العملاء</button><button class="chip" data-f="due">عليه باقي</button><button class="chip" data-f="paid">حسابه منتهي</button><button class="chip" data-f="credit">له رصيد</button></div><div class="chips"><button class="chip active" data-s="activity">الأحدث حركة</button><button class="chip" data-s="number">رقم العميل</button><button class="chip" data-s="name">الاسم</button><button class="chip" data-s="balance">أكبر مديونية</button><button class="chip" data-s="profit">أعلى ربح</button></div></div>';
-    if(search) search.insertAdjacentHTML('afterend',html); else page.insertAdjacentHTML('afterbegin',html);
-    page.querySelectorAll('#hp-stage6-client-filter [data-f]').forEach(function(b){b.onclick=function(){clientFilter=b.getAttribute('data-f'); page.querySelectorAll('[data-f]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); renderClients();};});
-    page.querySelectorAll('#hp-stage6-client-filter [data-s]').forEach(function(b){b.onclick=function(){clientSort=b.getAttribute('data-s'); page.querySelectorAll('[data-s]').forEach(function(x){x.classList.remove('active')}); b.classList.add('active'); renderClients();};});
+    // V41.1: client filters are owned only by 15-v36-feature-integrity.js.
+    // Keeping this no-op prevents duplicate filters and avoids DOM re-injection loops.
+    try{var old=byId('hp-stage6-client-filter'); if(old) old.remove();}catch(e){}
+    return;
   }
 
   window.renderClients=function(){
