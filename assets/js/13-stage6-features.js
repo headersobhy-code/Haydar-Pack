@@ -159,7 +159,7 @@
     openDrawer('dr-settings'); renderDeleteLogArea();
   };
   window.hpStage6HardReload=function(){
-    var base=location.href.split('?')[0]; location.href=base+'?v=38emergency_'+Date.now();
+    var base=location.href.split('?')[0]; location.href=base+'?v=41backup&safeReload='+Date.now();
   };
   if(!window.manualSyncNow){
     window.manualSyncNow=function(){

@@ -1,0 +1,33 @@
+Haydar Pack V41 — Backup Center + Simple Sync UI
+
+Scope:
+- Sync/backup UI only.
+- No changes to clients, orders, invoices, reports, calculations, or document templates.
+
+Changes:
+1) Simplified sync page:
+   - Main visible buttons reduced to:
+     * مزامنة وحماية الآن
+     * مركز النسخ الاحتياطي
+   - Legacy emergency buttons remain available but hidden inside Backup Center.
+
+2) Backup Center:
+   - Shows Google current summary.
+   - Shows local device summary.
+   - Shows latest backup summary.
+   - Lists latest backups with counts/revision/date.
+   - Allows restore of a selected backup by date/name.
+
+3) Automatic safety backups:
+   - Local safety snapshot before sync/restore/reload/import/delete actions.
+   - Throttled cloud backup before critical operations.
+
+4) Old-version protection:
+   - Client sends appVersion=41.0.0-backup-center on database writes.
+   - Apps Script rejects database writes from old or unknown app versions.
+   - Opening old query versions is normalized to ?v=41backup.
+
+5) Existing protections preserved:
+   - V39 Data Protection Lock remains active.
+   - V40 Image Separation remains active.
+   - Emergency restore tools are hidden, not deleted.

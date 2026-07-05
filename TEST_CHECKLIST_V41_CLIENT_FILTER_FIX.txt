@@ -1,0 +1,7 @@
+Test checklist:
+1. Open https://headersobhy-code.github.io/Haydar-Pack/?v=41filterfix
+2. Go to Clients.
+3. Confirm client filters appear one time only.
+4. Test filter: all / due / paid / credit.
+5. Open Sync page and confirm V41 Backup Center UI is still present.
+6. Do not modify Apps Script for this patch.

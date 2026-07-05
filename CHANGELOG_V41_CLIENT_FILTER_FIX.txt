@@ -1,0 +1,5 @@
+V41 Client Filter Fix
+- Fixed duplicated client filter chips on Clients page.
+- Kept V41 Backup Center + Simple Sync UI unchanged.
+- Kept V39 Data Protection Lock and V40 Image Separation unchanged.
+- GitHub-only update. No Apps Script change required.

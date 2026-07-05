@@ -9,7 +9,7 @@
 (function(){
   'use strict';
 
-  var VERSION='40-image-separation';
+  var VERSION='41-backup-center-simple-ui';
   var LOCAL_KEY='hayder_bags_app';
   var META_KEY='hayder_pack_sync_meta_v37';
   var PENDING_KEY='hayder_pack_sync_pending_v37';
@@ -179,7 +179,7 @@
       var url=backendUrl(), iframeName='hp_v37_post_'+Date.now();
       var iframe=document.createElement('iframe');iframe.name=iframeName;iframe.style.display='none';
       var form=document.createElement('form');form.method='POST';form.action=url;form.target=iframeName;form.style.display='none';form.acceptCharset='UTF-8';
-      fields=fields||{};fields.action=action;
+      fields=fields||{};fields.action=action;fields.appVersion='41.0.0-backup-center';fields.siteVersion='41backup';
       Object.keys(fields).forEach(function(k){var t=document.createElement('textarea');t.name=k;t.value=String(fields[k]==null?'':fields[k]);form.appendChild(t)});
       document.body.appendChild(iframe);document.body.appendChild(form);form.submit();
       setTimeout(function(){try{form.remove();iframe.remove()}catch(e){}resolve({ok:true})},2300);

@@ -1,0 +1,22 @@
+V41 Test Checklist
+
+After uploading Apps Script then GitHub:
+1) Open: https://headersobhy-code.github.io/Haydar-Pack/?v=41backup
+2) Open Sync page.
+3) Confirm the visible interface shows only:
+   - مزامنة وحماية الآن
+   - مركز النسخ الاحتياطي
+4) Click مزامنة وحماية الآن.
+   - Confirm status remains سليمة / متصل ومحفوظ.
+   - Confirm counts remain correct.
+5) Open مركز النسخ الاحتياطي.
+   - Confirm Google current summary is visible.
+   - Confirm local summary is visible.
+   - Confirm backup list is visible.
+6) Do NOT restore a backup unless needed.
+7) Confirm regular app features still exist:
+   - Client filters.
+   - Edit client/debt.
+   - Order archive on delivered.
+   - Invoice/quote/account statement.
+   - Receipt image display.
