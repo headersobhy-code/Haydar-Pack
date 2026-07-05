@@ -1,0 +1,8 @@
+V36 FINAL RESTORE
+- Built on V35 + all V34 Stage 6 features.
+- Forces fresh assets via ?v=36final.
+- Preserves client filters/search/sort.
+- Preserves client edit/debt/delete from client detail and edit drawer.
+- Preserves delete log/restoration.
+- Preserves V35 fixes: auto archive delivered, docs header/pagination, receipt viewer, last-month order filter, order count.
+- GitHub only. No Apps Script changes.
