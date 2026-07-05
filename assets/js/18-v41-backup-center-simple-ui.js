@@ -2,8 +2,8 @@
    Scope: sync/backup UI only. Does not alter clients/orders/invoices/calculations. */
 (function(){
   'use strict';
-  var VERSION='41.1.0-backup-center-filter-fix';
-  var SITE_VERSION='41filterfix';
+  var VERSION='41.0.0-backup-center';
+  var SITE_VERSION='41backup';
   var LOCAL_KEY='hayder_bags_app';
   var META_KEY='hayder_pack_sync_meta_v37';
   var PENDING_KEY='hayder_pack_sync_pending_v37';
