@@ -9,7 +9,7 @@
 (function(){
   'use strict';
 
-  var VERSION='38-emergency-data-guard';
+  var VERSION='39-data-protection-lock';
   var LOCAL_KEY='hayder_bags_app';
   var META_KEY='hayder_pack_sync_meta_v37';
   var PENDING_KEY='hayder_pack_sync_pending_v37';
@@ -51,8 +51,20 @@
     capitalMoves:(db.capitalMoves||[]).length,
     deleted:((db.deletedItems||[]).length+(db.deletedLog||[]).length+(db.deletedArchive||[]).length)
   }}
-  function hasUsefulData(db){var c=counts(db||{});return c.clients+c.factories+c.orders+c.payments+c.transfers+c.expenses+c.capitalMoves+c.deleted>0}
+  function hasUsefulData(db){var c=counts(db||{});return c.clients+c.orders+c.payments+c.transfers+c.expenses+c.capitalMoves+c.deleted>0}
   function usefulCount(db){var c=counts(db||{});return c.clients+c.factories+c.orders+c.payments+c.transfers+c.expenses+c.capitalMoves+c.deleted}
+  function isDangerousRemote(incoming,base){
+    var i=counts(incoming||{}), b=counts(base||{});
+    var iCrit=i.clients+i.orders+i.payments+i.transfers+i.expenses+i.capitalMoves+i.deleted;
+    var bCrit=b.clients+b.orders+b.payments+b.transfers+b.expenses+b.capitalMoves+b.deleted;
+    if(bCrit>=5 && iCrit===0)return true;
+    if(bCrit>=10 && iCrit<Math.floor(bCrit*0.35))return true;
+    if(b.clients>=5 && i.clients===0)return true;
+    if(b.clients>=10 && i.clients<Math.floor(b.clients*0.5))return true;
+    if(b.payments>=5 && i.payments===0)return true;
+    if(b.orders>=3 && i.orders===0)return true;
+    return false;
+  }
   function saveEmergencyLocalBackup(reason){
     try{
       if(!hasUsefulData(DB))return;
@@ -220,10 +232,10 @@
   function applyRemote(data,meta,msg){
     if(!data||typeof data!=='object')throw new Error('الداتا القادمة من Google غير صالحة');
     var remoteClean=cleanData(data);
-    if(!hasUsefulData(remoteClean) && hasUsefulData(DB)){
-      saveEmergencyLocalBackup('blocked-empty-google-over-local');
-      setSync('err','تم منع تحميل نسخة Google فارغة فوق بيانات موجودة على الجهاز');
-      throw new Error('Google أرجع نسخة فارغة — تم حماية الداتا المحلية ولم يتم استبدالها');
+    if((!hasUsefulData(remoteClean) && hasUsefulData(DB)) || isDangerousRemote(remoteClean,DB)){
+      saveEmergencyLocalBackup('blocked-dangerous-google-over-local');
+      setSync('err','تم منع تحميل نسخة Google فارغة أو ناقصة فوق بيانات موجودة على الجهاز');
+      throw new Error('Google أرجع نسخة فارغة/ناقصة — تم حماية الداتا المحلية ولم يتم استبدالها');
     }
     if(hasUsefulData(DB))saveEmergencyLocalBackup('before-remote-apply');
     suppress=true;
@@ -396,7 +408,7 @@
     var old=$('hp-stage4-sync-panel');if(old)old.remove();
     if($('hp-v37-sync-panel'))return;
     var div=document.createElement('div');div.id='hp-v37-sync-panel';div.className='alert blue';
-    div.innerHTML='<div style="font-weight:900;margin-bottom:8px">المزامنة التلقائية V38 Emergency</div><div>أي تعديل يتحفظ فورًا على الجهاز ثم يترفع تلقائيًا على Google. لا تحتاج ترفع يدويًا.</div><div style="font-size:16px;margin-top:8px">رابط Apps Script /exec المستخدم:</div><div dir="ltr" style="word-break:break-all;font-size:14px;background:#fff;border:3px solid #000;border-radius:12px;padding:10px;margin:8px 0">'+backendUrl()+'</div><div id="hp-v37-pending-line" style="font-weight:900">حركات في انتظار الرفع: '+pendingCount()+'</div><div class="btn-row" style="margin-top:10px"><button class="btn green" onclick="refreshCloudData(true)"><i class="ti ti-refresh"></i> تحديث آمن من Google</button><button class="btn blue" onclick="manualSync()"><i class="ti ti-cloud-up"></i> مزامنة الآن للطوارئ</button></div><div class="btn-row" style="margin-top:8px"><button class="btn amber" onclick="restorePreviousGoogleData()"><i class="ti ti-rotate-clockwise"></i> استرجاع النسخة السابقة</button><button class="btn red" onclick="restoreLatestGoogleBackup()"><i class="ti ti-lifebuoy"></i> استرجاع أحدث Backup</button></div>';
+    div.innerHTML='<div style="font-weight:900;margin-bottom:8px">المزامنة التلقائية V39 Data Protection</div><div>أي تعديل يتحفظ فورًا على الجهاز ثم يترفع تلقائيًا على Google. لا تحتاج ترفع يدويًا.</div><div style="font-size:16px;margin-top:8px">رابط Apps Script /exec المستخدم:</div><div dir="ltr" style="word-break:break-all;font-size:14px;background:#fff;border:3px solid #000;border-radius:12px;padding:10px;margin:8px 0">'+backendUrl()+'</div><div id="hp-v37-pending-line" style="font-weight:900">حركات في انتظار الرفع: '+pendingCount()+'</div><div class="btn-row" style="margin-top:10px"><button class="btn green" onclick="refreshCloudData(true)"><i class="ti ti-refresh"></i> تحديث آمن من Google</button><button class="btn blue" onclick="manualSync()"><i class="ti ti-cloud-up"></i> مزامنة الآن للطوارئ</button></div><div class="btn-row" style="margin-top:8px"><button class="btn amber" onclick="restorePreviousGoogleData()"><i class="ti ti-rotate-clockwise"></i> استرجاع النسخة السابقة</button><button class="btn red" onclick="restoreLatestGoogleBackup()"><i class="ti ti-lifebuoy"></i> استرجاع أحدث Backup</button></div>';
     var grid=drawer.querySelector('.cloud-status-grid');drawer.insertBefore(div,grid||drawer.children[2]||null);
   }
   function triggerImport(){var i=$('cloud-import-input');if(i){i.value='';i.click()}}

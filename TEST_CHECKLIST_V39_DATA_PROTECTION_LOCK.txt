@@ -1,0 +1,10 @@
+V39 Test Checklist
+
+1) Update Apps Script Code.gs to V39 and deploy new version.
+2) Upload GitHub V39 files and open ?v=39protect.
+3) Open sync page: confirm V39 Data Protection panel appears.
+4) Confirm clients/orders/payments are still visible.
+5) Press فحص الحماية and confirm no data disappears.
+6) Press إعادة تحميل آمن from settings; data must remain.
+7) Add a small payment/order change and confirm it stays after reload.
+8) Do not use old links like ?v=37autosync.

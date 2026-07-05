@@ -1,0 +1,9 @@
+Haydar Pack V39 — Data Protection Lock
+
+- Added client-side Data Protection Lock panel.
+- Fixed sync useful-data logic: factories alone no longer count as safe operational data.
+- Blocks Google empty/partial data from overwriting local data.
+- Blocks dangerous local upload when clients/payments/orders suddenly collapse.
+- Safe reload now backs up and preflights Google before reload.
+- Added local safe snapshot restore and best-Google restore actions.
+- Requires Apps Script V39 for full server-side destructive-save protection.
