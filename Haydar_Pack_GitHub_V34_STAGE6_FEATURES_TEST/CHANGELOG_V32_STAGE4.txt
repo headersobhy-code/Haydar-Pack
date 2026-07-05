@@ -1,0 +1,10 @@
+V32 Stage 4 Test - Sync & Import Cleanup
+- GitHub PWA sync is overridden by one final Stage 4 adapter.
+- Reads from Apps Script use JSONP action=data/meta/backup.
+- Saves/imports use hidden POST form, then confirm by reading Google again.
+- Import JSON from GitHub page uploads directly to Google and waits for confirmation.
+- Import creates server-side backup through Code.gs before replacing data.
+- Protects against stale import/write using baseRevision and confirmation checks.
+- Boot guard prevents stuck loading screen and page overlap.
+- No document/header/calculation feature changes in this stage.
+- Apps Script Code.gs updated to V32 Stage 4 with meta checksum/counts and protected replace.
