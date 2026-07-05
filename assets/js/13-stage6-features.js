@@ -154,12 +154,12 @@
       +'<div class="cloud-status-card"><div class="cloud-status-label">الأوردرات</div><div class="cloud-status-value">'+counts.orders+'</div></div>'
       +'</div>'
       +'<div class="btn-row"><button class="btn green" onclick="refreshCloudData(true)"><i class="ti ti-refresh"></i> تحديث من Google</button><button class="btn blue" onclick="manualSyncNow()"><i class="ti ti-cloud-up"></i> رفع آخر تعديل</button></div>'
-      +'<div class="btn-row"><button class="btn" onclick="downloadManualBackup()"><i class="ti ti-download"></i> تنزيل Backup</button><button class="btn amber" onclick="hpStage6HardReload()"><i class="ti ti-reload"></i> إعادة تحميل بدون كاش</button></div>'
+      +'<div class="btn-row"><button class="btn" onclick="downloadManualBackup()"><i class="ti ti-download"></i> تنزيل Backup</button><button class="btn amber" onclick="hpStage6HardReload()"><i class="ti ti-reload"></i> إعادة تحميل آمن</button></div>'
       +'<div class="sec-label">سجل الحذف والاسترجاع</div><div class="card" id="hp-stage6-delete-log"></div>';
     openDrawer('dr-settings'); renderDeleteLogArea();
   };
   window.hpStage6HardReload=function(){
-    var base=location.href.split('?')[0]; location.href=base+'?v=34stage6_'+Date.now();
+    var base=location.href.split('?')[0]; location.href=base+'?v=38emergency_'+Date.now();
   };
   if(!window.manualSyncNow){
     window.manualSyncNow=function(){

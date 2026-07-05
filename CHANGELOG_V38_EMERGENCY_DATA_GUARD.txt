@@ -1,0 +1,8 @@
+Haydar Pack V38 Emergency Data Guard
+
+- Prevents empty Google data from overwriting useful local data.
+- Prevents empty local/pending data from being uploaded to Google.
+- Adds local emergency backup before any remote apply.
+- Adds automatic recovery attempt from Google Previous/Backups when current Google data is empty, requires Code.gs V38.
+- Fixes settings hard reload to current V38 version instead of old V34 query.
+- No features removed from V37/V36/V35/V34.
