@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Haydar Pack</title>
+<meta name="application-name" content="Haydar Pack">
+<meta name="apple-mobile-web-app-title" content="Haydar Pack">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="msapplication-TileColor" content="#1a1a2e">
+<meta name="description" content="Haydar Pack order, clients, factories and invoices manager">
+<script src="config.js"></script>
+<link rel="icon" type="image/png" sizes="192x192" href="hp-logo-v3-192.png?v=34stage6">
+<link rel="apple-touch-icon" sizes="192x192" href="hp-logo-v3-192.png?v=34stage6">
+<link rel="manifest" href="manifest.webmanifest?v=34stage6">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
+<link rel="stylesheet" href="assets/css/styles.css?v=34stage6">
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo-wrap">
+      <div class="logo-icon"><img class="hp-app-logo" src="hp-logo-v3-192.png?v=34stage6" alt="Haydar Pack"></div>
+      <div><div class="logo-name">Haydar Pack</div><div class="logo-sub">إدارة أوردرات ومصانع وفواتير</div></div>
+    </div>
+    <div class="top-actions">
+      <button class="topbar-btn" onclick="openSync()" title="النسخ الاحتياطي"><i class="ti ti-database-export"></i><span id="sync-dot" class="sync-dot"></span></button>
+      <button class="topbar-btn" onclick="openNotify()" title="التنبيهات"><i class="ti ti-bell"></i></button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="page active" id="pg-home">
+      <div class="chips" id="home-periods"></div>
+      <div class="month-tabs" id="home-months"></div>
+      <div class="stat-grid">
+        <div class="stat-box green"><div class="sl">دخل الفترة</div><div class="sv" id="h-income">0 ج</div></div>
+        <div class="stat-box red"><div class="sl">تكلفة ومصاريف</div><div class="sv" id="h-costs">0 ج</div></div>
+        <div class="stat-box amber"><div class="sl">صافي الربح</div><div class="sv" id="h-profit">0 ج</div></div>
+        <div class="stat-box blue"><div class="sl">باقي على عملاء</div><div class="sv" id="h-pending">0 ج</div></div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-box blue"><div class="sl">أوردرات الفترة</div><div class="sv" id="h-ords">0</div></div>
+        <div class="stat-box green"><div class="sl">تم التوصيل</div><div class="sv" id="h-delivered">0</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" onclick="openOrderForm()"><i class="ti ti-plus"></i> أوردر جديد</button>
+      </div>
+      <div class="sec-label">تقسيم الحالات</div>
+      <div class="card" id="h-status"></div>
+      <div class="sec-label">آخر الأوردرات</div>
+      <div id="h-recent-orders"></div>
+      <div class="sec-label">باقي للمصانع</div>
+      <div class="card" id="h-factory-dues"></div>
+    </div>
+
+    <div class="page" id="pg-orders">
+      <div class="btn-row">
+        <button class="btn primary" onclick="openOrderForm()"><i class="ti ti-plus"></i> أوردر جديد</button>
+        <button class="btn" onclick="openDrawer('dr-expense')"><i class="ti ti-receipt"></i> مصروف</button>
+        <button class="btn blue" onclick="exportSelectedOrdersExcel()"><i class="ti ti-file-spreadsheet"></i> تصدير المحدد</button>
+        <button class="btn" onclick="toggleVisibleOrderChecks()"><i class="ti ti-checks"></i> تحديد الظاهر</button>
+        <button class="btn amber" onclick="toggleArchiveView()"><i class="ti ti-archive"></i> <span id="archive-toggle-label">عرض الأرشيف</span></button>
+      </div>
+      <div class="search-wrap"><i class="ti ti-search"></i><input id="q-orders" placeholder="بحث بالكود أو العميل أو المصنع..." oninput="renderOrders()"></div>
+      <div class="sec-label">حالة الأوردر</div><div class="chips" id="status-chips"></div>
+      <div class="sec-label">الفترة</div><div class="chips" id="period-chips"></div>
+      <div class="sec-label">المصنع</div><div class="chips" id="order-chips"></div>
+      <div id="orders-list"></div>
+    </div>
+
+    <div class="page" id="pg-clients">
+      <div class="btn-row"><button class="btn primary" onclick="openDrawer('dr-client')"><i class="ti ti-user-plus"></i> عميل جديد</button></div>
+      <div class="search-wrap"><i class="ti ti-search"></i><input id="q-clients" placeholder="بحث باسم العميل..." oninput="renderClients()"></div>
+      <div id="clients-list"></div>
+    </div>
+
+    <div class="page" id="pg-factories">
+      <div class="btn-row">
+        <button class="btn primary" onclick="openFactoryForm()"><i class="ti ti-plus"></i> مصنع جديد</button>
+        <button class="btn green" onclick="openTransferForm()"><i class="ti ti-send"></i> تحويل للمصنع</button>
+      </div>
+      <div id="factories-list"></div>
+    </div>
+
+    <div class="page" id="pg-reports">
+      <div class="chips" id="rep-periods"></div>
+      <div class="month-tabs" id="rep-months"></div>
+      <div class="btn-row">
+        <button class="btn blue" onclick="exportAllExcel()"><i class="ti ti-file-spreadsheet"></i> تصدير كل البيانات</button>
+        <button class="btn green" onclick="addNextMonth()"><i class="ti ti-calendar-plus"></i> إضافة شهر</button>
+        <button class="btn" onclick="openDrawer('dr-expense')"><i class="ti ti-receipt"></i> إضافة مصروف</button>
+      </div>
+      <div class="stat-grid" id="rep-stats"></div>
+      <div class="sec-label">تقارير حسب المصنع</div><div class="card" id="rep-fac"></div>
+      <div class="sec-label">تقارير حسب العميل</div><div class="card" id="rep-clients"></div>
+      <div class="sec-label">الأوردرات حسب الحالة</div><div class="card" id="rep-status"></div>
+      <div class="sec-label">المصروفات</div><div class="card" id="rep-exp"></div>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <button class="nb active" onclick="showPage('home',this)"><i class="ti ti-home"></i>الرئيسية</button>
+    <button class="nb" onclick="showPage('orders',this)"><i class="ti ti-package"></i>الأوردرات</button>
+    <button class="nb" onclick="showPage('clients',this)"><i class="ti ti-users"></i>العملاء</button>
+    <button class="nb" onclick="showPage('factories',this)"><i class="ti ti-building-factory-2"></i>المصانع</button>
+    <button class="nb" onclick="showPage('reports',this)"><i class="ti ti-chart-bar"></i>تقارير</button>
+  </nav>
+</div>
+
+<!-- ORDER FORM -->
+<div class="overlay" id="dr-order"><div class="drawer">
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-package"></i> <span id="order-drawer-title">أوردر جديد</span></div>
+  <input type="hidden" id="o-edit-id">
+  <div class="alert blue">رقم الأوردر يتعمل أوتوماتيك. حالة "تم استلام الأوردر" معناها أن الأوردر اتسجل ولسه أمر التصنيع متنقلش للمصنع.</div>
+  <div class="field"><label>حالة الأوردر</label><select id="o-status"></select></div>
+  <div class="two">
+    <div class="field"><label>كود الأوردر</label><input id="o-code" readonly></div>
+    <div class="field"><label>تاريخ الأوردر</label><input id="o-date" type="date" onchange="updateOrderCodeForDate()"></div>
+  </div>
+  <div class="field"><label>اسم الأوردر / البراند</label><input id="o-name"></div>
+  <div class="field"><label>اسم العميل <span class="req">*</span></label><select id="o-client"><option value="">— اختر عميل —</option></select></div>
+  <div class="field"><label>المصنع <span class="req">*</span></label><select id="o-factory"><option value="">— اختر مصنع —</option></select></div>
+  <div class="field"><label>نوع الشنطة</label><select id="o-type"><option>يد داخلية</option><option>هاندل يد خارجية</option><option>بوكس</option><option>كرافت</option><option>جراب بدلة</option><option>شنطة حلوانى</option><option>أخرى</option></select></div>
+  <div class="two"><div class="field"><label>لون الشنطة</label><input id="o-color" value="ابيض"></div><div class="field"><label>لون اليد</label><input id="o-handle"></div></div>
+  <div class="field"><label>لون الطباعة</label><input id="o-print"></div>
+  <div class="field"><label>عدد الألوان</label><select id="o-color-count"><option value="1">1 لون</option><option value="2">2 لون</option><option value="3">3 ألوان</option><option value="4">4 ألوان</option><option value="5">5 ألوان</option></select></div>
+  <div class="two"><div class="field"><label>عرض المقاس</label><input id="o-width"></div><div class="field"><label>ارتفاع المقاس</label><input id="o-height"></div></div>
+  <input id="o-size" type="hidden">
+  <div class="field"><label>العدد المبدئي من العميل</label><input id="o-qty" type="number" min="0" step="1" oninput="calcOTotal()"></div>
+  <div class="field"><label>صورة التصميم داخل الأوردر</label><input id="o-design" type="file" accept="image/*" onchange="previewDesignImage(this)"><img id="o-design-preview" class="design-thumb hide"><div class="img-actions"><button type="button" class="btn small red-out" onclick="clearDesignImage()"><i class="ti ti-trash"></i> حذف الصورة</button></div><div class="tiny muted">يتم ضغط الصورة تلقائياً لتجنب اللاج أو امتلاء المتصفح.</div></div>
+  <div class="field"><label>ملاحظات</label><textarea id="o-notes"></textarea></div>
+  <div class="sec-label">الأسعار والحسابات</div>
+  <div class="field"><label>سعر الشنطة للعميل</label><input id="o-price" type="number" min="0" step="0.01" oninput="calcOTotal()"></div>
+  <div class="field"><label>الاكلاشيه على العميل</label><input id="o-ak" type="number" min="0" step="0.01" oninput="calcOTotal()"></div>
+  <div class="field"><label>العربون المدفوع من العميل</label><input id="o-deposit" type="number" min="0" step="0.01" oninput="calcOTotal()"></div>
+  <div class="two">
+    <div class="total-preview"><div class="tp-label">إجمالي العميل المتوقع</div><div class="tp-val" id="o-total-prev">0 ج</div></div>
+    <div class="total-preview due-preview"><div class="tp-label">المستحق بعد العربون</div><div class="tp-val" id="o-due-prev">0 ج</div></div>
+  </div>
+  <div style="display:flex;gap:8px"><button class="btn green full" onclick="saveOrder()"><i class="ti ti-check"></i> حفظ</button><button class="btn" onclick="closeDrawer('dr-order')">إلغاء</button></div>
+</div></div>
+
+<!-- CLIENT -->
+<div class="overlay" id="dr-client"><div class="drawer">
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-user-plus"></i> عميل جديد</div>
+  <div class="field"><label>اسم العميل <span class="req">*</span></label><input id="c-name" placeholder="الاسم الكامل"></div>
+  <div class="field"><label>رقم الهاتف</label><input id="c-phone" type="tel" placeholder="01xxxxxxxxx"></div>
+  <div class="field"><label>العنوان / المدينة</label><input id="c-addr" placeholder="مثال: المنوفية"></div>
+  <div class="field"><label>مديونية قديمة</label><input id="c-debt" type="number" min="0" step="0.01"></div>
+  <div style="display:flex;gap:8px"><button class="btn primary full" onclick="saveClient()"><i class="ti ti-check"></i> إضافة</button><button class="btn" onclick="closeDrawer('dr-client')">إلغاء</button></div>
+</div></div>
+
+<!-- FACTORY -->
+<div class="overlay" id="dr-factory"><div class="drawer">
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-building-factory-2"></i> <span id="factory-drawer-title">مصنع جديد</span></div>
+  <input type="hidden" id="f-edit-id">
+  <div class="field"><label>اسم المصنع <span class="req">*</span></label><input id="f-name" placeholder="اسم المصنع"></div>
+  <div class="field"><label>رقم الهاتف</label><input id="f-phone" type="tel" placeholder="01xxxxxxxxx"></div>
+  <div class="field"><label>مديونية قديمة عليك</label><input id="f-debt" type="number" min="0" step="0.01"></div>
+  <div style="display:flex;gap:8px"><button class="btn primary full" onclick="saveFactory()"><i class="ti ti-check"></i> حفظ</button><button class="btn" onclick="closeDrawer('dr-factory')">إلغاء</button></div>
+</div></div>
+
+<!-- TRANSFER -->
+<div class="overlay" id="dr-transfer"><div class="drawer">
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-send"></i> تحويل للمصنع</div>
+  <input type="hidden" id="t-edit-id">
+  <div class="field"><label>المصنع <span class="req">*</span></label><select id="t-fac"><option value="">— اختر مصنع —</option></select></div>
+  <div class="two"><div class="field"><label>المبلغ <span class="req">*</span></label><input id="t-amt" type="number" min="0" step="0.01"></div><div class="field"><label>التاريخ</label><input id="t-date" type="date"></div></div>
+  <div class="field"><label>نوع التحويل</label><select id="t-type"><option>فودافون كاش</option><option>انستا باي</option><option>كاش يد</option><option>تحويل بنكي</option></select></div>
+  <div class="field"><label>صورة إيصال التحويل</label><input id="t-receipt" type="file" accept="image/*" onchange="previewReceipt(this,'t-receipt-preview')"><img id="t-receipt-preview" class="receipt-thumb hide"></div>
+  <div class="field"><label>ملاحظة</label><input id="t-note" placeholder="اختياري"></div>
+  <div style="display:flex;gap:8px"><button class="btn green full" onclick="saveTransfer()"><i class="ti ti-check"></i> حفظ التحويل</button><button class="btn" onclick="closeDrawer('dr-transfer')">إلغاء</button></div>
+</div></div>
+
+<!-- EXPENSE -->
+<div class="overlay" id="dr-expense"><div class="drawer">
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-receipt"></i> مصروف / هوالك</div>
+  <div class="field"><label>نوع المصروف</label><select id="ex-type"><option>هوالك / عمولة</option><option>شحن ومواصلات</option><option>خصم على أوردر</option><option>مصروف إداري</option><option>أخرى</option></select></div>
+  <div class="field"><label>ربط المصروف بأوردر معين</label><select id="ex-order"><option value="">مصروف عام بدون أوردر</option></select></div>
+  <div class="two"><div class="field"><label>المبلغ <span class="req">*</span></label><input id="ex-amt" type="number" min="0" step="0.01"></div><div class="field"><label>التاريخ</label><input id="ex-date" type="date"></div></div>
+  <div class="field"><label>ملاحظة</label><input id="ex-note" placeholder="تفاصيل..."></div>
+  <div style="display:flex;gap:8px"><button class="btn red-out full" onclick="saveExpense()"><i class="ti ti-check"></i> حفظ المصروف</button><button class="btn" onclick="closeDrawer('dr-expense')">إلغاء</button></div>
+</div></div>
+
+<!-- PAYMENT -->
+<div class="overlay" id="dr-payment"><div class="drawer">
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-cash"></i> تسجيل دفعة عميل</div>
+  <input type="hidden" id="pay-cid"><div class="alert green" id="pay-info">—</div>
+  <div class="two"><div class="field"><label>المبلغ <span class="req">*</span></label><input id="pay-amt" type="number" min="0" step="0.01"></div><div class="field"><label>التاريخ</label><input id="pay-date" type="date"></div></div>
+  <div class="field"><label>صورة إيصال الدفع</label><input id="pay-receipt" type="file" accept="image/*" onchange="previewReceipt(this,'pay-receipt-preview')"><img id="pay-receipt-preview" class="receipt-thumb hide"></div>
+  <div class="field"><label>ملاحظة</label><input id="pay-note" placeholder="اختياري"></div>
+  <div style="display:flex;gap:8px"><button class="btn green full" onclick="savePayment()"><i class="ti ti-check"></i> حفظ الدفعة</button><button class="btn" onclick="closeDrawer('dr-payment')">إلغاء</button></div>
+</div></div>
+
+<!-- FACTORY PRICES -->
+<div class="overlay" id="dr-fprice"><div class="drawer">
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-edit"></i> بيانات المصنع النهائية</div>
+  <input type="hidden" id="fp-oid"><div class="alert amber" id="fp-info">—</div>
+  <div class="alert blue">عدد المصنع النهائي هو اللي هيتم حساب العميل عليه بدل العدد المبدئي.</div>
+  <div class="two"><div class="field"><label>عدد المصنع النهائي</label><input id="fp-qty" type="number" min="0" step="1" oninput="calcFPTotal()"></div><div class="field"><label>سعر الشنطة من المصنع</label><input id="fp-price" type="number" min="0" step="0.01" oninput="calcFPTotal()"></div></div>
+  <div class="field"><label>اكلاشيه المصنع</label><input id="fp-ak" type="number" min="0" step="0.01" oninput="calcFPTotal()"></div>
+  <div class="two"><div class="total-preview"><div class="tp-label">إجمالي المصنع</div><div class="tp-val" id="fp-total-prev">0 ج</div></div><div class="total-preview" style="background:#eef2ff;border-color:#dbe6ff"><div class="tp-label" style="color:#1a5eb8">إجمالي العميل بعد العدد النهائي</div><div class="tp-val" style="color:#1a5eb8" id="fp-client-total-prev">0 ج</div></div></div>
+  <div style="display:flex;gap:8px"><button class="btn green full" onclick="saveFactoryPrices()"><i class="ti ti-check"></i> حفظ</button><button class="btn" onclick="closeDrawer('dr-fprice')">إلغاء</button></div>
+</div></div>
+
+
+<!-- CAPITAL MANAGEMENT -->
+<div class="overlay" id="dr-capital"><div class="drawer">
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-wallet"></i> إدارة رأس المال والسيولة</div>
+  <div class="alert blue">سجل رأس المال، الإضافات، السحوبات، والفلوس المستلفة التي تدخل كسيولة وتعود لصاحبها.</div>
+  <div class="field"><label>رأس المال الأساسي / الحالي كبداية</label><input id="cap-base" type="number" min="0" step="0.01"></div>
+  <div class="field"><label>نوع الحركة</label><select id="cap-type"><option value="owner_add">إضافة رأس مال من فلوسك</option><option value="owner_withdraw">سحب شخصي من رأس المال</option><option value="loan_in">فلوس مستلفة دخلت السيولة</option><option value="loan_repay">رد فلوس مستلفة لصاحبها</option></select></div>
+  <div class="two"><div class="field"><label>المبلغ</label><input id="cap-amount" type="number" min="0" step="0.01"></div><div class="field"><label>التاريخ</label><input id="cap-date" type="date"></div></div>
+  <div class="field"><label>اسم الشخص / ملاحظة</label><input id="cap-note"></div>
+  <div class="btn-row"><button class="btn green" onclick="saveCapitalSettings()"><i class="ti ti-check"></i> حفظ رأس المال</button><button class="btn blue" onclick="saveCapitalMovement()"><i class="ti ti-plus"></i> إضافة الحركة</button></div>
+  <div class="sec-label">آخر حركات رأس المال</div><div class="card" id="cap-moves-list"></div>
+  <button class="btn full" onclick="closeDrawer('dr-capital')">إغلاق</button>
+</div></div>
+
+<!-- DETAILS / FACTORY / SYNC / NOTIFY -->
+<div class="overlay" id="dr-client-detail"><div class="drawer" id="client-detail-body"></div></div>
+<div class="overlay" id="dr-order-detail"><div class="drawer" id="order-detail-body"></div></div>
+<div class="overlay" id="dr-factory-detail"><div class="drawer" id="factory-detail-body"></div></div>
+<div class="overlay" id="dr-notify"><div class="drawer"><div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-bell"></i> التنبيهات</div><div id="notify-body"></div></div></div>
+<div class="overlay" id="dr-sync"><div class="drawer">
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-cloud-check"></i> الحفظ السحابي وحماية البيانات</div>
+  <div class="alert blue">الداتا محفوظة في حساب Google المركزي. أي تعديل من الموبايل أو الكمبيوتر يظهر على الجهاز الآخر بعد الحفظ أو التحديث. لا تغلق الصفحة أثناء ظهور عبارة <b>جاري الحفظ</b>.</div>
+  <div class="cloud-status-grid">
+    <div class="cloud-status-card"><div class="cloud-status-label">الاتصال</div><div class="cloud-status-value" id="cloud-connection-status">جاري الاتصال...</div></div>
+    <div class="cloud-status-card"><div class="cloud-status-label">آخر حفظ على Google</div><div class="cloud-status-value" id="cloud-last-status">—</div></div>
+    <div class="cloud-status-card"><div class="cloud-status-label">رقم مراجعة الداتا</div><div class="cloud-status-value" id="cloud-revision-status">—</div></div>
+    <div class="cloud-status-card"><div class="cloud-status-label">حالة قاعدة البيانات</div><div class="cloud-status-value" id="data-health-status">جاري الفحص...</div></div>
+  </div>
+  <div id="cloud-conflict-area"></div>
+  <div class="btn-row">
+    <button class="btn green" onclick="refreshCloudData(true)"><i class="ti ti-refresh"></i> تحميل آخر داتا</button>
+    <button class="btn blue" onclick="createCloudBackup()"><i class="ti ti-cloud-download"></i> نسخة احتياطية الآن</button>
+  </div>
+  <div class="btn-row">
+    <button class="btn" onclick="downloadManualBackup()"><i class="ti ti-download"></i> تنزيل نسخة على الجهاز</button>
+    <button class="btn amber" onclick="triggerCloudImport()"><i class="ti ti-file-upload"></i> استيراد الداتا القديمة</button>
+  </div>
+  <input id="cloud-import-input" type="file" accept="application/json,.json" class="hide" onchange="importCloudBackup(this)">
+  <button class="btn full" onclick="runDataHealthCheckUI()"><i class="ti ti-shield-check"></i> فحص سلامة قاعدة البيانات</button>
+  <div id="data-health-details" class="backup-health-details"></div>
+  <div class="alert amber" style="margin-top:12px" id="sync-status">جاري تحميل آخر بيانات من Google...</div>
+  <button class="btn full" onclick="closeDrawer('dr-sync')">إغلاق</button>
+</div></div>
+
+<div id="cloud-loading-cover" class="cloud-loading-cover"><div class="cloud-loading-box"><div class="cloud-spinner"></div><div id="cloud-loading-text">جاري فتح Haydar Pack وتحميل آخر بيانات...</div></div></div><div id="cloud-offline-banner" class="cloud-offline-banner">لا يوجد اتصال بالإنترنت — التعديل محفوظ مؤقتًا على هذا الجهاز ولم يصل إلى Google بعد.</div>
+
+<div id="panic-root"></div>
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/01-core.js?v=34stage6"></script>
+
+<script src="assets/js/02-pwa-register.js?v=34stage6"></script>
+
+
+<script src="assets/js/03-client-edit.js?v=34stage6"></script>
+
+
+
+<script src="assets/js/04-finance-capital-docs.js?v=34stage6"></script>
+
+
+
+<script src="assets/js/05-safe-import-boot.js?v=34stage6"></script>
+
+
+<script src="assets/js/06-delete-doclogo-sync.js?v=34stage6"></script>
+
+
+<script src="assets/js/07-doc-client-numbering.js?v=34stage6"></script>
+
+
+
+<script src="assets/js/08-doc-header-client-profit.js?v=34stage6"></script>
+
+
+
+<!-- ===== V29 STAGE 1: STABLE BOOT GUARD / NO FEATURE CHANGES ===== -->
+<style id="hp-v29-stage1-css">
+  .page:not(.active){display:none!important;}
+  .page.active{display:block!important;}
+  #cloud-loading-cover.hp-v29-forced-hide{display:none!important;}
+</style>
+<script src="assets/js/09-boot-guard.js?v=34stage6"></script>
+
+<!-- ===== V30 STAGE 2: CENTRAL ACCOUNTING CALCULATIONS ONLY ===== -->
+<script src="assets/js/10-calculations.js?v=34stage6"></script>
+
+
+<!-- ===== V31 STAGE 3: DOCUMENT PRINTING CLEAN MODULE ONLY ===== -->
+<script src="assets/js/11-printing.js?v=34stage6"></script>
+
+<script src="assets/js/12-sync-import.js?v=34stage6"></script>
+
+<!-- ===== V34 STAGE 6: FUTURE IMPROVEMENTS TEST ===== -->
+<script src="assets/js/13-stage6-features.js?v=34stage6"></script>
+
+</body>
+</html>
