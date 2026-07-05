@@ -1,7 +1,0 @@
-V34 Stage 6 Test
-- Added Settings screen without changing Apps Script.
-- Added delete log and restore for deleted clients/orders.
-- Added stronger profit insights in Reports.
-- Added better client search/filter/sort.
-- Confirmed client detail has edit/debt/delete actions.
-- Added cache version V34 and Stage 6 UI polish.
