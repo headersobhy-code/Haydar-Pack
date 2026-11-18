@@ -1,4 +1,4 @@
-/* Haydar Pack V49 final-stable bundle: 06-data-protection-images-backup.js
+/* Haydar Pack V50 final-stable bundle: 06-data-protection-images-backup.js
    Sources: 16-v39-data-protection-lock.js, 17-v40-image-separation.js, 18-v41-backup-center-simple-ui.js
    Based on V44.1 Sync Fix; production cleanup without business-logic changes. */
 
@@ -16,7 +16,7 @@
   var SNAP_META_KEY='hayder_pack_v39_last_safe_snapshot_meta';
   var URL_KEY='hayder_pack_stage4_backend_url_v32';
   var OLD_URL_KEY='hayder_pack_backend_url_v10';
-  var FIXED_URL='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
+  var FIXED_URL='https://script.google.com/macros/s/AKfycbyz3ChhXQ2xMZdD2UHmAsLitbgIvKcSGiQYX7zBNNrJb6h9lem5sLlOBgpkPCOyrWZd2A/exec';
 
   function $(id){return document.getElementById(id)}
   function arr(v){return Array.isArray(v)?v:[]}
@@ -150,6 +150,7 @@
     }
     return {status:status,ok:true};
   }
+  if(!window.HP_MUTATION_SYNC){
   var oldRefresh=window.refreshCloudData;
   window.refreshCloudData=async function(show){
     saveSafeSnapshot('before-safe-google-refresh');
@@ -183,6 +184,7 @@
     };
     try{save=window.save}catch(e){}
   }
+  }
   window.hpV39RestoreLocalSnapshot=restoreLocalSnapshot;
   window.hpV39RestoreBestCloud=function(){return restoreBestCloud().then(function(){return window.refreshCloudData(true)}).catch(function(e){toastSafe(e.message||'فشل الاسترجاع')})};
   window.hpV39DataGuardCheck=async function(){
@@ -193,7 +195,7 @@
     saveSafeSnapshot('before-safe-reload');
     try{await cloudPreflight(true)}catch(e){toastSafe((e&&e.message)||'فشل فحص الأمان — سيتم إعادة تحميل الصفحة فقط بدون مسح')}
     var base=location.href.split('?')[0];
-    location.href=base+'?v=49finalstable&safeReload='+Date.now();
+    location.href=base+'?v=production_20260807_fix7&safeReload='+Date.now();
   };
   function panelHtml(){
     var c=counts(currentDB()), snap=readSafeSnapshot(), sc=snap&&snap.counts;
@@ -217,11 +219,12 @@
     if(line){var c=counts(currentDB());line.textContent=(msg?msg+' — ':'')+'نسخة الجهاز: '+fmtCounts(c)}
   }
   var oldOpenSync=window.openSync;
-  window.openSync=function(){var r=oldOpenSync?oldOpenSync.apply(this,arguments):undefined;setTimeout(function(){injectGuardPanel();updateGuardUI()},100);return r};
+  if(!window.HP_MUTATION_SYNC)window.openSync=function(){var r=oldOpenSync?oldOpenSync.apply(this,arguments):undefined;setTimeout(function(){injectGuardPanel();updateGuardUI()},100);return r};
   var oldOpenSettings=window.openSettings;
-  window.openSettings=function(){var r=oldOpenSettings?oldOpenSettings.apply(this,arguments):undefined;setTimeout(function(){injectGuardPanel();updateGuardUI()},120);return r};
+  if(!window.HP_MUTATION_SYNC)window.openSettings=function(){var r=oldOpenSettings?oldOpenSettings.apply(this,arguments):undefined;setTimeout(function(){injectGuardPanel();updateGuardUI()},120);return r};
   function boot(){
     saveSafeSnapshot('boot');
+    if(window.HP_MUTATION_SYNC){setInterval(function(){saveSafeSnapshot('auto-interval')},60000);return}
     var rep=localDestructiveReport();
     if(rep.danger){restoreLocalSnapshot();toastSafe('تم استرجاع نسخة محلية آمنة لأن النسخة المفتوحة كانت ناقصة')}
     setInterval(function(){saveSafeSnapshot('auto-interval')},60000);
@@ -256,7 +259,7 @@
   var IMG_QUEUE_KEY='hayder_pack_v40_image_queue';
   var URL_KEY='hayder_pack_stage4_backend_url_v32';
   var OLD_URL_KEY='hayder_pack_backend_url_v10';
-  var FIXED_URL='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
+  var FIXED_URL='https://script.google.com/macros/s/AKfycbyz3ChhXQ2xMZdD2UHmAsLitbgIvKcSGiQYX7zBNNrJb6h9lem5sLlOBgpkPCOyrWZd2A/exec';
   var uploadTimer=null, processing=false, syncDebounce=null;
 
   function $(id){return document.getElementById(id)}
@@ -338,14 +341,14 @@
    Scope: sync/backup UI only. Does not alter clients/orders/invoices/calculations. */
 (function(){
   'use strict';
-  var VERSION='49.0.0-final-stable';
-  var SITE_VERSION='49finalstable';
+  var VERSION='2026.08.07-production-fix.5';
+  var SITE_VERSION='production_20260807_fix7';
   var LOCAL_KEY='hayder_bags_app';
   var META_KEY='hayder_pack_sync_meta_v37';
   var PENDING_KEY='hayder_pack_sync_pending_v37';
   var URL_KEY='hayder_pack_stage4_backend_url_v32';
   var OLD_URL_KEY='hayder_pack_backend_url_v10';
-  var FIXED_URL='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
+  var FIXED_URL='https://script.google.com/macros/s/AKfycbyz3ChhXQ2xMZdD2UHmAsLitbgIvKcSGiQYX7zBNNrJb6h9lem5sLlOBgpkPCOyrWZd2A/exec';
   var statusCache=null, loadingBackups=false, observer=null, lastAutoBackupAt=0, booted=false, simpleTimer=null;
 
   function $(id){return document.getElementById(id)}
@@ -495,12 +498,10 @@
     ensureSimplePanel(); setWorking('جاري فحص الحماية والمزامنة...', 'work');
     try{
       await autoSafetySnapshot('v41-sync-now');
-      if(window.HP_V39_GUARD&&typeof window.HP_V39_GUARD.cloudPreflight==='function'){
-        try{await window.HP_V39_GUARD.cloudPreflight(true)}catch(e){console.warn(e)}
-      }
-      if(typeof window.refreshCloudData==='function')await window.refreshCloudData(true);
+      var syncResult=null;
+      if(typeof window.refreshCloudData==='function')syncResult=await window.refreshCloudData(true);
+      if(!syncResult)throw new Error('لم يصل تأكيد من Google. لم يتم اعتبار المزامنة ناجحة وسيعاد الاتصال تلقائيًا.');
       try{if(window.HP_V40_IMAGES&&typeof window.HP_V40_IMAGES.processQueue==='function')window.HP_V40_IMAGES.processQueue()}catch(e){}
-      await loadBackupStatus(false);
       updateSimpleUI(); setWorking('تمت المزامنة والفحص. لا توجد خطوات مطلوبة.', 'ok');
       toastSafe('تمت المزامنة والحماية');
     }catch(e){console.error(e);setWorking((e&&e.message)||'تعذر إتمام المزامنة — لم يتم حذف أي بيانات', 'err');toastSafe((e&&e.message)||'تعذر المزامنة')}
@@ -596,10 +597,9 @@
     if(booted)return;
     booted=true;
     if(!simpleTimer) simpleTimer=setInterval(updateSimpleUI,3000);
-    setTimeout(function(){loadBackupStatus(false).catch(function(){})},2500);
   }
   var oldOpenSync=window.openSync;
-  window.openSync=function(){var r=oldOpenSync?oldOpenSync.apply(this,arguments):undefined;setTimeout(function(){ensureSimplePanel();hideLegacySyncUI();loadBackupStatus(false).catch(function(){})},250);setTimeout(hideLegacySyncUI,800);return r};
+  window.openSync=function(){var r=oldOpenSync?oldOpenSync.apply(this,arguments):undefined;setTimeout(function(){ensureSimplePanel();hideLegacySyncUI()},250);setTimeout(hideLegacySyncUI,800);return r};
   var oldSetSyncState=window.setSyncState;
   if(typeof oldSetSyncState==='function')window.setSyncState=function(){var r=oldSetSyncState.apply(this,arguments);setTimeout(updateSimpleUI,0);return r};
   document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,1200)});
@@ -615,11 +615,11 @@
 /* ===== END SOURCE: 18-v41-backup-center-simple-ui.js ===== */
 
 
-/* ===== BEGIN V49 FINAL STABILITY GUARD ===== */
+/* ===== BEGIN V50 FINAL STABILITY GUARD ===== */
 (function(){
   'use strict';
-  var VERSION='49.0.0-final-stable';
-  var SITE_VERSION='49finalstable';
+  var VERSION='2026.08.07-production-fix.5';
+  var SITE_VERSION='production_20260807_fix7';
   var LOG_KEY='hayder_pack_error_log_v49';
   var MAX_LOGS=80;
   var wrapped=false;
@@ -646,12 +646,14 @@
       extra:extra||null
     };
     var list=readLogs(); list.unshift(entry); writeLogs(list); updateWidget();
-    try{console.warn('[Haydar Pack V49 captured]',entry)}catch(e){}
+    try{console.warn('[Haydar Pack V50 captured]',entry)}catch(e){}
     return entry;
   }
   function toastSafe(m){try{if(typeof toast==='function')toast(m)}catch(e){}}
-  window.hpV49LogError=function(kind,err,ctx,extra){return addLog(kind,err,ctx,extra)};
+  window.hpV50LogError=function(kind,err,ctx,extra){return addLog(kind,err,ctx,extra)};
   window.addEventListener('error',function(e){
+    if(e&&e.target&&e.target!==window&&!e.error)return;
+    if(e&&!e.error&&/^Script error\.?$/i.test(String(e.message||'').trim()))return;
     addLog('window.error', e.error||e.message, 'global', {source:e.filename||'',line:e.lineno||0,col:e.colno||0});
   });
   window.addEventListener('unhandledrejection',function(e){
@@ -681,14 +683,14 @@
   function widgetHtml(){
     var s=statusText(), last=s.last;
     return '<div id="hp-v49-stability-widget" class="hp-v49-card">'
-      +'<div class="hp-v49-head"><i class="ti ti-activity-heartbeat"></i> حالة النظام V49</div>'
+      +'<div class="hp-v49-head"><i class="ti ti-activity-heartbeat"></i> حالة النظام</div>'
       +'<div class="hp-v49-grid">'
       +'<div class="hp-v49-mini"><b>الأخطاء المسجلة</b><span id="hp-v49-count" class="'+s.cls+'">'+esc(String(s.logs.length))+'</span></div>'
       +'<div class="hp-v49-mini"><b>آخر خطأ</b><span id="hp-v49-last">'+esc(last?(last.message||'—'):'لا يوجد')+'</span></div>'
       +'<div class="hp-v49-mini"><b>الاتصال</b><span id="hp-v49-online">'+esc(navigator.onLine?'متصل':'أوفلاين')+'</span></div>'
       +'<div class="hp-v49-mini"><b>حركات معلقة</b><span id="hp-v49-pending">'+esc(String(s.pending))+'</span></div>'
       +'</div>'
-      +'<div class="hp-v41-actions"><button class="btn" onclick="hpV49ToggleLog()"><i class="ti ti-list-details"></i> عرض سجل الأخطاء</button><button class="btn blue" onclick="hpV49DownloadLog()"><i class="ti ti-download"></i> تنزيل التقرير</button><button class="btn amber" onclick="hpV49ClearLog()"><i class="ti ti-trash"></i> مسح السجل</button></div>'
+      +'<div class="hp-v41-actions"><button class="btn" onclick="hpV50ToggleLog()"><i class="ti ti-list-details"></i> عرض سجل الأخطاء</button><button class="btn blue" onclick="hpV50DownloadLog()"><i class="ti ti-download"></i> تنزيل التقرير</button><button class="btn amber" onclick="hpV50ClearLog()"><i class="ti ti-trash"></i> مسح السجل</button></div>'
       +'<pre id="hp-v49-log-box" class="hp-v49-log" style="display:none"></pre>'
       +'</div>';
   }
@@ -710,11 +712,11 @@
     if((el=$('hp-v49-pending')))el.textContent=String(s.pending);
     if((el=$('hp-v49-log-box'))&&el.style.display!=='none')el.textContent=logSummaryText();
   }
-  window.hpV49ToggleLog=function(){ensureWidget();var box=$('hp-v49-log-box');if(!box)return;var show=box.style.display==='none'||!box.style.display;box.style.display=show?'block':'none';if(show)box.textContent=logSummaryText();};
-  window.hpV49ClearLog=function(){if(!confirm('مسح سجل الأخطاء المحلي فقط؟ الداتا لن تتأثر.'))return;writeLogs([]);updateWidget();toastSafe('تم مسح سجل الأخطاء')};
-  window.hpV49DownloadLog=function(){
-    var report='Haydar Pack V49 Error Report\nGenerated: '+now()+'\nURL: '+location.href+'\nOnline: '+navigator.onLine+'\nCounts: '+JSON.stringify(counts())+'\n\n'+logSummaryText();
-    try{var blob=new Blob([report],{type:'text/plain;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='haydar-pack-error-report-'+Date.now()+'.txt';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){addLog('download.error',e,'hpV49DownloadLog');}
+  window.hpV50ToggleLog=function(){ensureWidget();var box=$('hp-v49-log-box');if(!box)return;var show=box.style.display==='none'||!box.style.display;box.style.display=show?'block':'none';if(show)box.textContent=logSummaryText();};
+  window.hpV50ClearLog=function(){if(!confirm('مسح سجل الأخطاء المحلي فقط؟ الداتا لن تتأثر.'))return;writeLogs([]);updateWidget();toastSafe('تم مسح سجل الأخطاء')};
+  window.hpV50DownloadLog=function(){
+    var report='Haydar Pack V50 Error Report\nGenerated: '+now()+'\nURL: '+location.href+'\nOnline: '+navigator.onLine+'\nCounts: '+JSON.stringify(counts())+'\n\n'+logSummaryText();
+    try{var blob=new Blob([report],{type:'text/plain;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='haydar-pack-error-report-'+Date.now()+'.txt';document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500)}catch(e){addLog('download.error',e,'hpV50DownloadLog');}
   };
   function fallbackRender(name){
     var targets={renderOrders:'orders-list',renderClients:'clients-list',renderFactories:'factories-list',renderReports:'rep-stats',renderHome:'h-status'};
@@ -741,6 +743,6 @@
   window.addEventListener('online',function(){setTimeout(updateWidget,200)});
   window.addEventListener('offline',function(){setTimeout(updateWidget,200)});
   setTimeout(boot,3000);
-  window.HP_V49_STABILITY={version:VERSION,siteVersion:SITE_VERSION,readLogs:readLogs,log:addLog,clear:function(){writeLogs([]);updateWidget()},update:updateWidget};
+  window.HP_V50_STABILITY={version:VERSION,siteVersion:SITE_VERSION,readLogs:readLogs,log:addLog,clear:function(){writeLogs([]);updateWidget()},update:updateWidget};
 })();
-/* ===== END V49 FINAL STABILITY GUARD ===== */
+/* ===== END V50 FINAL STABILITY GUARD ===== */

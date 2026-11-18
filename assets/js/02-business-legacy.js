@@ -1,4 +1,4 @@
-/* Haydar Pack V49 final-stable bundle: 02-business-legacy.js
+/* Haydar Pack V50 final-stable bundle: 02-business-legacy.js
    Sources: 03-client-edit.js, 04-finance-capital-docs.js, 05-safe-import-boot.js, 06-delete-doclogo-sync.js, 07-doc-client-numbering.js, 08-doc-header-client-profit.js
    Based on V44.1 Sync Fix; production cleanup without business-logic changes. */
 
@@ -121,7 +121,7 @@
 /* ===== HAYDAR PACK V23: INVOICE DISCOUNT + DOCUMENT LOGO + CAPITAL LOAN DETAILS ===== */
 (function(){
   'use strict';
-  var HP_SYNC_URL='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
+  var HP_SYNC_URL='https://script.google.com/macros/s/AKfycbyz3ChhXQ2xMZdD2UHmAsLitbgIvKcSGiQYX7zBNNrJb6h9lem5sLlOBgpkPCOyrWZd2A/exec';
   window.HP_APPS_SCRIPT_URL=HP_SYNC_URL;
 
   function $(id){return document.getElementById(id)}
@@ -376,7 +376,7 @@
   var HP_PWA_META_KEY='hayder_pack_pwa_meta_v10';
   var HP_PWA_PENDING_KEY='hayder_pack_pwa_pending_v10';
   var HP_PWA_BACKEND_KEY='hayder_pack_backend_url_v10';
-  var HP_FIXED_BACKEND='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
+  var HP_FIXED_BACKEND='https://script.google.com/macros/s/AKfycbyz3ChhXQ2xMZdD2UHmAsLitbgIvKcSGiQYX7zBNNrJb6h9lem5sLlOBgpkPCOyrWZd2A/exec';
 
   function hpV24Toast(msg){try{if(typeof toast==='function')toast(msg);else alert(msg)}catch(e){}}
   function hpV24SetState(state,msg){
@@ -562,7 +562,7 @@
 */
 (function(){
   'use strict';
-  var HP_V25_SYNC_URL='https://script.google.com/macros/s/AKfycbw0RxMaw2gNicQjSD5T3LHhd-6d2DnABYKGNNMDD1NN3b09wJL3OatLviAn7xqDu2Zq6w/exec';
+  var HP_V25_SYNC_URL='https://script.google.com/macros/s/AKfycbyz3ChhXQ2xMZdD2UHmAsLitbgIvKcSGiQYX7zBNNrJb6h9lem5sLlOBgpkPCOyrWZd2A/exec';
   window.HP_APPS_SCRIPT_URL=HP_V25_SYNC_URL;
   try{localStorage.setItem('hayder_pack_backend_url_v10',HP_V25_SYNC_URL);}catch(e){}
 

@@ -12,20 +12,20 @@
 <meta name="theme-color" content="#1a1a2e">
 <meta name="msapplication-TileColor" content="#1a1a2e">
 <meta name="description" content="Haydar Pack order, clients, factories and invoices manager">
-<script src="config.js"></script>
-<link rel="icon" type="image/png" sizes="192x192" href="hp-logo-v3-192.png?v=49finalstable">
-<link rel="apple-touch-icon" sizes="192x192" href="hp-logo-v3-192.png?v=49finalstable">
-<link rel="manifest" href="manifest.webmanifest?v=49finalstable">
+<script src="config.js?v=production_20261118_statements_1"></script>
+<link rel="icon" type="image/png" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261118_statements_1">
+<link rel="apple-touch-icon" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261118_statements_1">
+<link rel="manifest" href="manifest.webmanifest?v=production_20261118_statements_1">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
-<link rel="stylesheet" href="assets/css/styles.css?v=49finalstable">
+<link rel="stylesheet" href="assets/css/styles.css?v=production_20261118_statements_1">
 </head>
 <body>
 <div class="app">
   <div class="topbar">
     <div class="logo-wrap">
-      <div class="logo-icon"><img class="hp-app-logo" src="hp-logo-v3-192.png?v=49finalstable" alt="Haydar Pack"></div>
+      <div class="logo-icon"><img class="hp-app-logo" src="hp-logo-v3-192.png?v=production_20261118_statements_1" alt="Haydar Pack"></div>
       <div><div class="logo-name">Haydar Pack</div><div class="logo-sub">إدارة أوردرات ومصانع وفواتير</div></div>
     </div>
     <div class="top-actions">
@@ -229,11 +229,11 @@
 <div class="overlay" id="dr-factory-detail"><div class="drawer" id="factory-detail-body"></div></div>
 <div class="overlay" id="dr-notify"><div class="drawer"><div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-bell"></i> التنبيهات</div><div id="notify-body"></div></div></div>
 <div class="overlay" id="dr-sync"><div class="drawer">
-  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-cloud-check"></i> الحفظ السحابي وحماية البيانات</div>
-  <div class="alert blue">الداتا محفوظة في حساب Google المركزي. أي تعديل من الموبايل أو الكمبيوتر يظهر على الجهاز الآخر بعد الحفظ أو التحديث. لا تغلق الصفحة أثناء ظهور عبارة <b>جاري الحفظ</b>.</div>
+  <div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-device-mobile-check"></i> الحفظ المحلي والنسخ الاحتياطي</div>
+  <div class="alert blue">الداتا تُحفظ فورًا على الجهاز المفتوح. نقل الداتا إلى جهاز آخر يتم بتنزيل ملف JSON ثم استيراده هناك.</div>
   <div class="cloud-status-grid">
     <div class="cloud-status-card"><div class="cloud-status-label">الاتصال</div><div class="cloud-status-value" id="cloud-connection-status">جاري الاتصال...</div></div>
-    <div class="cloud-status-card"><div class="cloud-status-label">آخر حفظ على Google</div><div class="cloud-status-value" id="cloud-last-status">—</div></div>
+    <div class="cloud-status-card"><div class="cloud-status-label">آخر حفظ على الجهاز</div><div class="cloud-status-value" id="cloud-last-status">—</div></div>
     <div class="cloud-status-card"><div class="cloud-status-label">رقم مراجعة الداتا</div><div class="cloud-status-value" id="cloud-revision-status">—</div></div>
     <div class="cloud-status-card"><div class="cloud-status-label">حالة قاعدة البيانات</div><div class="cloud-status-value" id="data-health-status">جاري الفحص...</div></div>
   </div>
@@ -249,11 +249,11 @@
   <input id="cloud-import-input" type="file" accept="application/json,.json" class="hide" onchange="importCloudBackup(this)">
   <button class="btn full" onclick="runDataHealthCheckUI()"><i class="ti ti-shield-check"></i> فحص سلامة قاعدة البيانات</button>
   <div id="data-health-details" class="backup-health-details"></div>
-  <div class="alert amber" style="margin-top:12px" id="sync-status">جاري تحميل آخر بيانات من Google...</div>
+  <div class="alert amber" style="margin-top:12px" id="sync-status">جاري فتح البيانات المحفوظة على الجهاز...</div>
   <button class="btn full" onclick="closeDrawer('dr-sync')">إغلاق</button>
 </div></div>
 
-<div id="cloud-loading-cover" class="cloud-loading-cover"><div class="cloud-loading-box"><div class="cloud-spinner"></div><div id="cloud-loading-text">جاري فتح Haydar Pack وتحميل آخر بيانات...</div></div></div><div id="cloud-offline-banner" class="cloud-offline-banner">لا يوجد اتصال بالإنترنت — التعديل محفوظ مؤقتًا على هذا الجهاز ولم يصل إلى Google بعد.</div>
+<div id="cloud-loading-cover" class="cloud-loading-cover"><div class="cloud-loading-box"><div class="cloud-spinner"></div><div id="cloud-loading-text">جاري فتح Haydar Pack من هذا الجهاز...</div></div></div><div id="cloud-offline-banner" class="cloud-offline-banner">لا يوجد اتصال بالإنترنت — يمكنك الاستمرار لأن الحفظ محلي.</div>
 
 <div id="panic-root"></div>
 <div class="toast" id="toast"></div>
@@ -263,14 +263,16 @@
   .page.active{display:block!important;}
   #cloud-loading-cover.hp-v29-forced-hide{display:none!important;}
 </style>
-<!-- V49 Final Stable: full structured GitHub release, status-sync guard, error log and backup center preserved. -->
-<script src="assets/js/01-core-base.js?v=49finalstable"></script>
-<script src="assets/js/02-business-legacy.js?v=49finalstable"></script>
-<script src="assets/js/03-boot-calc-print.js?v=49finalstable"></script>
-<script src="assets/js/04-sync-import.js?v=49finalstable"></script>
-<script src="assets/js/05-feature-patches.js?v=49finalstable"></script>
-<script src="assets/js/06-data-protection-images-backup.js?v=49finalstable"></script>
-<script src="assets/js/07-clients-final.js?v=49finalstable"></script>
+<!-- V55 Lite Consolidation: keeps V49.1, V50, V51, V52, V53 repair, V54 docs; post-V49 modules are merged into one file to reduce file count. -->
+<script src="assets/js/01-core-base.js?v=production_20261118_statements_1"></script>
+<script src="assets/js/02-business-legacy.js?v=production_20261118_statements_1"></script>
+<script src="assets/js/03-boot-calc-print.js?v=production_20261118_statements_1"></script>
+<script src="assets/js/04-sync-import.js?v=production_20261118_statements_1"></script>
+<script src="assets/js/05-feature-patches.js?v=production_20261118_statements_1"></script>
+<script src="assets/js/06-data-protection-images-backup.js?v=production_20261118_statements_1"></script>
+<script src="assets/js/07-clients-final.js?v=production_20261118_statements_1"></script>
+<script src="assets/js/08-post49-final-modules.js?v=production_20261118_statements_1"></script>
+<script src="assets/js/09-local-first-final.js?v=production_20261118_statements_1"></script>
 
 </body>
 </html>
