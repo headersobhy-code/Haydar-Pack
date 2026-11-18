@@ -135,38 +135,7 @@
     saveAndRefresh('تم حذف العميل وحفظه في سجل الحذف');
   };
 
-  function ensureSettingsOverlay(){
-    if(byId('dr-settings')) return;
-    var html='<div class="overlay" id="dr-settings"><div class="drawer"><div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-settings"></i> إعدادات Haydar Pack</div><div id="hp-stage6-settings-body"></div><button class="btn full" onclick="closeDrawer(\'dr-settings\')">إغلاق</button></div></div>';
-    document.body.insertAdjacentHTML('beforeend',html);
-  }
-  function addSettingsButton(){
-    try{
-      var top=document.querySelector('.top-actions'); if(!top || byId('hp-stage6-settings-btn')) return;
-      top.insertAdjacentHTML('afterbegin','<button id="hp-stage6-settings-btn" class="topbar-btn" onclick="openSettings()" title="الإعدادات"><i class="ti ti-settings"></i></button>');
-    }catch(e){}
-  }
-  window.openSettings=function(){
-    ensureStage6Data(); ensureSettingsOverlay();
-    var body=byId('hp-stage6-settings-body'); if(!body) return;
-    var counts={clients:arr(DB.clients).length,orders:arr(DB.orders).length,factories:arr(DB.factories).length,payments:arr(DB.payments).length,trash:arr(DB.deletedLog).length};
-    var url=(window.HP_APPS_SCRIPT_URL||'').replace(/</g,'&lt;');
-    body.innerHTML=''
-      +'<div class="alert blue">دي شاشة إعدادات خفيفة للنسخة المنظمة. لا تغير الداتا إلا من الأزرار الواضحة.</div>'
-      +'<div class="cloud-status-grid">'
-      +'<div class="cloud-status-card"><div class="cloud-status-label">الإصدار</div><div class="cloud-status-value">'+HP_STAGE6_VERSION+'</div></div>'
-      +'<div class="cloud-status-card"><div class="cloud-status-label">Apps Script</div><div class="cloud-status-value">'+(url||'غير محدد')+'</div></div>'
-      +'<div class="cloud-status-card"><div class="cloud-status-label">العملاء</div><div class="cloud-status-value">'+counts.clients+'</div></div>'
-      +'<div class="cloud-status-card"><div class="cloud-status-label">الأوردرات</div><div class="cloud-status-value">'+counts.orders+'</div></div>'
-      +'</div>'
-      +'<div class="btn-row"><button class="btn green" onclick="refreshCloudData(true)"><i class="ti ti-refresh"></i> تحديث من Google</button><button class="btn blue" onclick="manualSyncNow()"><i class="ti ti-cloud-up"></i> رفع آخر تعديل</button></div>'
-      +'<div class="btn-row"><button class="btn" onclick="downloadManualBackup()"><i class="ti ti-download"></i> تنزيل Backup</button><button class="btn amber" onclick="hpStage6HardReload()"><i class="ti ti-reload"></i> إعادة تحميل آمن</button></div>'
-      +'<div class="sec-label">سجل الحذف والاسترجاع</div><div class="card" id="hp-stage6-delete-log"></div>';
-    openDrawer('dr-settings'); renderDeleteLogArea();
-  };
-  window.hpStage6HardReload=function(){
-    var base=location.href.split('?')[0]; location.href=base+'?v=production_20260807_fix7&safeReload='+Date.now();
-  };
+  window.renderDeletedHistory=renderDeleteLogArea;
   if(!window.manualSyncNow){
     window.manualSyncNow=function(){
       try{
@@ -181,38 +150,12 @@
      Removed duplicate Stage6 renderClients/openClientDetail/openClientForm wrappers to prevent
      double rendering, duplicate buttons and future maintenance confusion. */
 
-  var oldRenderReports=window.renderReports;
-  window.renderReports=function(){
-    if(oldRenderReports) oldRenderReports.apply(this,arguments);
-    setTimeout(renderProfitInsights,0);
-  };
-  function renderProfitInsights(){
-    var stats=byId('rep-stats'); if(!stats) return;
-    var existing=byId('hp-stage6-profit-insights'); if(existing) existing.remove();
-    var orders=(typeof periodOrders==='function'?periodOrders(repPeriod,selRepMonth):arr(DB.orders));
-    var exps=(typeof periodExpenses==='function'?periodExpenses(repPeriod,selRepMonth):arr(DB.expenses));
-    var totalProfit=orders.reduce(function(s,o){return s+orderProfitSafe(o)},0)-exps.filter(function(e){return !e.orderId}).reduce(function(s,e){return s+n(e.amount)},0);
-    var losses=orders.filter(function(o){return orderProfitSafe(o)<0});
-    var best=orders.slice().sort(function(a,b){return orderProfitSafe(b)-orderProfitSafe(a)})[0];
-    var byClient={}; orders.forEach(function(o){byClient[o.clientId]=(byClient[o.clientId]||0)+orderProfitSafe(o)});
-    var topClientId=Object.keys(byClient).sort(function(a,b){return byClient[b]-byClient[a]})[0];
-    var topClient=getClient(topClientId)||{};
-    var avg=orders.length?totalProfit/orders.length:0;
-    var html='<div id="hp-stage6-profit-insights"><div class="sec-label">تحليل أرباح متقدم</div><div class="report-insights-grid">'
-      +'<div class="insight-card"><div class="insight-title">صافي الربح التحليلي</div><div class="insight-value '+(totalProfit>=0?'up':'down')+'">'+money(totalProfit)+'</div><div class="insight-sub">بعد تكلفة المصنع ومصاريف الفترة</div></div>'
-      +'<div class="insight-card"><div class="insight-title">متوسط ربح الأوردر</div><div class="insight-value '+(avg>=0?'up':'down')+'">'+money(avg)+'</div><div class="insight-sub">على '+orders.length+' أوردر</div></div>'
-      +'<div class="insight-card"><div class="insight-title">أفضل عميل ربحًا</div><div class="insight-value up">'+esc(topClient.name||'—')+'</div><div class="insight-sub">'+(topClientId?money(byClient[topClientId]):'—')+'</div></div>'
-      +'<div class="insight-card"><div class="insight-title">أوردرات خاسرة</div><div class="insight-value '+(losses.length?'down':'up')+'">'+losses.length+'</div><div class="insight-sub">'+(best?'أعلى ربح: '+esc(best.code||'')+' · '+money(orderProfitSafe(best)):'لا توجد بيانات')+'</div></div>'
-      +'</div></div>';
-    stats.insertAdjacentHTML('afterend',html);
-  }
-
   function polishDocs(){
     try{document.documentElement.style.setProperty('--hp-stage6','1')}catch(e){}
   }
 
   function init(){
-    ensureStage6Data(); ensureSettingsOverlay(); addSettingsButton(); polishDocs();
+    ensureStage6Data(); polishDocs();
     try{if(activePage==='reports') renderReports();}catch(e){}
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init); else init();

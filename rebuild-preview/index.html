@@ -12,24 +12,24 @@
 <meta name="theme-color" content="#1a1a2e">
 <meta name="msapplication-TileColor" content="#1a1a2e">
 <meta name="description" content="Haydar Pack order, clients, factories and invoices manager">
-<script src="config.js?v=production_20261118_backup_settings_3"></script>
-<link rel="icon" type="image/png" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261118_backup_settings_3">
-<link rel="apple-touch-icon" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261118_backup_settings_3">
-<link rel="manifest" href="manifest.webmanifest?v=production_20261118_backup_settings_3">
+<script src="config.js?v=production_20261118_finance_review_1"></script>
+<link rel="icon" type="image/png" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261118_finance_review_1">
+<link rel="apple-touch-icon" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261118_finance_review_1">
+<link rel="manifest" href="manifest.webmanifest?v=production_20261118_finance_review_1">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
-<link rel="stylesheet" href="assets/css/styles.css?v=production_20261118_backup_settings_3">
+<link rel="stylesheet" href="assets/css/styles.css?v=production_20261118_finance_review_1">
 </head>
 <body>
 <div class="app">
   <div class="topbar">
     <div class="logo-wrap">
-      <div class="logo-icon"><img class="hp-app-logo" src="hp-logo-v3-192.png?v=production_20261118_backup_settings_3" alt="Haydar Pack"></div>
+      <div class="logo-icon"><img class="hp-app-logo" src="hp-logo-v3-192.png?v=production_20261118_finance_review_1" alt="Haydar Pack"></div>
       <div><div class="logo-name">Haydar Pack</div><div class="logo-sub">إدارة أوردرات ومصانع وفواتير</div></div>
     </div>
     <div class="top-actions">
-      <button class="topbar-btn" onclick="openSync()" title="النسخ الاحتياطي"><i class="ti ti-database-export"></i><span id="sync-dot" class="sync-dot"></span></button>
+      <button class="topbar-btn" onclick="openSync()" title="الإعدادات والنسخ الاحتياطي" aria-label="الإعدادات والنسخ الاحتياطي"><i class="ti ti-database-export"></i><span id="sync-dot" class="sync-dot"></span></button>
       <button class="topbar-btn" onclick="openNotify()" title="التنبيهات"><i class="ti ti-bell"></i></button>
     </div>
   </div>
@@ -97,10 +97,11 @@
         <button class="btn" onclick="openDrawer('dr-expense')"><i class="ti ti-receipt"></i> إضافة مصروف</button>
       </div>
       <div class="stat-grid" id="rep-stats"></div>
-      <div class="sec-label">تقارير حسب المصنع</div><div class="card" id="rep-fac"></div>
-      <div class="sec-label">تقارير حسب العميل</div><div class="card" id="rep-clients"></div>
-      <div class="sec-label">الأوردرات حسب الحالة</div><div class="card" id="rep-status"></div>
-      <div class="sec-label">المصروفات</div><div class="card" id="rep-exp"></div>
+      <div class="alert blue" id="rep-notes"></div>
+      <details class="card"><summary class="sec-label">المبيعات حسب العميل</summary><div id="rep-clients"></div></details>
+      <details class="card"><summary class="sec-label">المبيعات حسب المصنع</summary><div id="rep-fac"></div></details>
+      <details class="card"><summary class="sec-label">المصروفات المسجلة</summary><div id="rep-exp"></div></details>
+      <details class="card"><summary class="sec-label">المستندات المحفوظة</summary><div id="report-documents"></div></details>
     </div>
   </div>
 
@@ -230,7 +231,7 @@
 <div class="overlay" id="dr-notify"><div class="drawer"><div class="drawer-handle"></div><div class="drawer-title"><i class="ti ti-bell"></i> التنبيهات</div><div id="notify-body"></div></div></div>
 <div class="overlay" id="dr-backup"><div class="drawer">
   <div class="drawer-handle"></div>
-  <div class="drawer-title">الحفظ والنسخ الاحتياطي</div>
+  <div class="drawer-title">الإعدادات والنسخ الاحتياطي</div>
   <div class="cloud-status-grid">
     <div class="cloud-status-card"><div class="cloud-status-label">آخر حفظ على الجهاز</div><div class="cloud-status-value" id="backup-local-save">—</div></div>
     <div class="cloud-status-card"><div class="cloud-status-label">آخر نسخة داخل التطبيق</div><div class="cloud-status-value" id="backup-device-copy">—</div></div>
@@ -252,6 +253,7 @@
     <button class="btn green" id="backup-cloud-upload" onclick="createCloudBackup()">ارفع نسخة الآن</button>
     <button class="btn" id="backup-cloud-restore" onclick="restoreLatestExternalBackup()">استرجع آخر نسخة من Google</button>
   </div>
+  <details class="card"><summary class="sec-label">سجل الحذف</summary><div id="hp-stage6-delete-log"></div></details>
   <button class="btn full" onclick="closeDrawer('dr-backup')">إغلاق</button>
 </div></div>
 
@@ -266,15 +268,15 @@
   #cloud-loading-cover.hp-v29-forced-hide{display:none!important;}
 </style>
 <!-- V55 Lite Consolidation: keeps V49.1, V50, V51, V52, V53 repair, V54 docs; post-V49 modules are merged into one file to reduce file count. -->
-<script src="assets/js/01-core-base.js?v=production_20261118_backup_settings_3"></script>
-<script src="assets/js/02-business-legacy.js?v=production_20261118_backup_settings_3"></script>
-<script src="assets/js/03-boot-calc-print.js?v=production_20261118_backup_settings_3"></script>
-<script src="assets/js/04-sync-import.js?v=production_20261118_backup_settings_3"></script>
-<script src="assets/js/05-feature-patches.js?v=production_20261118_backup_settings_3"></script>
-<script src="assets/js/06-data-protection-images-backup.js?v=production_20261118_backup_settings_3"></script>
-<script src="assets/js/07-clients-final.js?v=production_20261118_backup_settings_3"></script>
-<script src="assets/js/08-post49-final-modules.js?v=production_20261118_backup_settings_3"></script>
-<script src="assets/js/09-local-first-final.js?v=production_20261118_backup_settings_3"></script>
+<script src="assets/js/01-core-base.js?v=production_20261118_finance_review_1"></script>
+<script src="assets/js/02-business-legacy.js?v=production_20261118_finance_review_1"></script>
+<script src="assets/js/03-boot-calc-print.js?v=production_20261118_finance_review_1"></script>
+<script src="assets/js/04-sync-import.js?v=production_20261118_finance_review_1"></script>
+<script src="assets/js/05-feature-patches.js?v=production_20261118_finance_review_1"></script>
+<script src="assets/js/06-data-protection-images-backup.js?v=production_20261118_finance_review_1"></script>
+<script src="assets/js/07-clients-final.js?v=production_20261118_finance_review_1"></script>
+<script src="assets/js/08-post49-final-modules.js?v=production_20261118_finance_review_1"></script>
+<script src="assets/js/09-local-first-final.js?v=production_20261118_finance_review_1"></script>
 
 </body>
 </html>
