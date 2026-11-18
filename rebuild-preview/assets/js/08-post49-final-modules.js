@@ -124,15 +124,15 @@
     var includes=function(date){return dateMatches(date,repPeriod,selRepMonth)};
     var result=totals(db,includes);
     function card(label,value,style){
-      return '<div class="stat-box '+style+'"><div class="sl">'+label+'</div><div class="sv">'+money(value)+'</div></div>';
+      return '<div class="stat-box '+style+'"><div class="sl">'+label+'</div><div class="sv">'+fmt(value)+'</div></div>';
     }
     g('rep-stats').innerHTML=card('مبيعات الأوردرات',result.sales,'blue')+
       card('تكلفة المصانع',result.cost,'red')+card('مصروفات الشغل',result.expenses,'red')+
       card('صافي ربح الأوردرات المحتسب',result.profit,result.profit<0?'red':'green');
     g('rep-notes').textContent=result.orders.length+' أوردر'+(result.countPending?
-      ' · أوردرات بدون مصنع مسجل خارج الربح: '+result.countPending+' بقيمة '+money(result.pending):'');
+      ' · أوردرات بدون مصنع مسجل خارج الربح: '+result.countPending+' بقيمة '+fmt(result.pending):'');
     var collected=legacyCollections(db,includes);
-    if(collected)g('rep-notes').textContent+=' · تحصيل من مديونيات سابقة: '+money(collected);
+    if(collected)g('rep-notes').textContent+=' · تحصيل من مديونيات سابقة: '+fmt(collected);
     function renderGroups(key,entities){
       var records=new Map();
       result.orders.forEach(function(order){
@@ -141,13 +141,13 @@
       });
       return Array.from(records).sort(function(a,b){return b[1]-a[1]}).map(function(pair){
         var entity=entities.find(function(item){return item.id===pair[0]});
-        return '<div class="row"><span>'+escHtml(entity?entity.name:'غير مسجل')+'</span><b>'+money(pair[1])+'</b></div>';
+        return '<div class="row"><span>'+escHtml(entity?entity.name:'غير مسجل')+'</span><b>'+fmt(pair[1])+'</b></div>';
       }).join('')||'<div class="empty">لا توجد أوردرات في الفترة</div>';
     }
     g('rep-clients').innerHTML=renderGroups('clientId',list(db,'clients'));
     g('rep-fac').innerHTML=renderGroups('factoryId',list(db,'factories'));
     g('rep-exp').innerHTML=list(db,'expenses').filter(function(item){return includes(item.date)}).map(function(item){
-      return '<div class="row"><span>'+escHtml(item.type||'مصروف')+' '+escHtml(item.date)+'</span><b>'+money(item.amount)+'</b></div>';
+      return '<div class="row"><span>'+escHtml(item.type||'مصروف')+' '+escHtml(item.date)+'</span><b>'+fmt(item.amount)+'</b></div>';
     }).join('')||'<div class="empty">لا توجد مصروفات في الفترة</div>';
   }
 
@@ -528,8 +528,6 @@
   function buildHtml(){
     var c=calcAll();
     var s=c.settings;
-    var rowsClients=topClients.length?topClients.map(function(x){var last=x.ago==null?'—':x.ago+' يوم';var gap=x.gap==null?'—':Math.round(x.gap)+' يوم';var btn='<button type="button" class="btn small blue" data-hp-v56-client="'+attr(x.id)+'">كشف</button>';return '<div class="hp-v56-client-card"><div class="hp-v56-client-top"><div><b>'+esc(x.name)+'</b><small>Risk '+x.score+'/100 · '+esc(x.rec)+'</small></div>'+btn+'</div><div class="hp-v56-client-grid">'+metric('مديونية',money(x.balance),'المتبقي الحالي',x.balance>0?'bad':'ok')+metric('متوسط الدفعة',money(x.avgPay),x.events+' دفعات')+metric('آخر دفعة',last,'متوسط بين الدفعات: '+gap)+metric('نسبة التحصيل',pct(x.ratio),'إجمالي مدفوع / طلبات')+metric('تأثير السيولة',money(x.liquidityImpact),'مديونية ناقص ربح العميل',x.liquidityImpact>0?'bad':'ok')+metric('ربح العميل',money(x.profit),'فرق البيع والتكلفة')+'</div></div>'}).join(''):'<div class="hp-v56-empty">لا توجد بيانات عملاء كافية.</div>';
-    var rowsFactories=topFactories.length?topFactories.map(function(f){var last=f.last?('آخر دفعة '+f.last):'لا توجد دفعات';var btn='<button type="button" class="btn small" data-hp-v56-factory="'+attr(f.id)+'">كشف</button>';return row3(f.name,money(f.cost),money(f.paid),'<b class="'+(f.due>0?'hp-v56-red':'hp-v56-green')+'">'+money(f.due)+'</b><small>'+esc(last)+'</small>',btn)}).join(''):'<div class="hp-v56-empty">لا توجد بيانات مصانع.</div>';
     var houseRows=arr('houseExpenses').slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))}).slice(0,12).map(function(e){return '<div class="hp-v56-exp-row"><div><b>'+esc(e.category||'أخرى')+'</b><small>'+esc(e.date||'')+(e.note?' · '+esc(e.note):'')+'</small></div><b>'+money(e.amount)+'</b><div><button type="button" class="btn small" data-hp-v56-edit-house="'+attr(e.id)+'">تعديل</button><button type="button" class="btn small red-out" data-hp-v56-del-house="'+attr(e.id)+'">حذف</button></div></div>'}).join('')||'<div class="hp-v56-empty">لا توجد مصروفات بيت مسجلة.</div>';
     var adjRows=arr('walletAdjustments').slice().sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''))}).slice(0,8).map(function(e){return '<div class="hp-v56-exp-row"><div><b>'+(e.type==='out'?'خروج سيولة':'دخول سيولة')+'</b><small>'+esc(e.date||'')+(e.note?' · '+esc(e.note):'')+'</small></div><b class="'+(e.type==='out'?'hp-v56-red':'hp-v56-green')+'">'+(e.type==='out'?'-':'+')+money(e.amount)+'</b><div><button type="button" class="btn small red-out" data-hp-v56-del-adj="'+attr(e.id)+'">حذف</button></div></div>'}).join('')||'<div class="hp-v56-empty">لا توجد تسويات يدوية.</div>';
     return '<div class="hp-v56-head"><h2>السيولة</h2><button type="button" class="btn blue" data-hp-v56-export="1">تصدير السيولة</button></div>'+
