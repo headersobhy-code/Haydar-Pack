@@ -184,7 +184,7 @@
   }
   function deviceBackup(manual){
     if(!backupReady || !useful(window.DB||{})) return Promise.resolve(false);
-    if(deviceBackupInFlight) return deviceBackupInFlight;
+    if(deviceBackupInFlight) return manual?deviceBackupInFlight.then(function(){return deviceBackup(true)}):deviceBackupInFlight;
     deviceBackupInFlight=createLocalSnapshot(manual?'manual-device':'daily-device').then(function(){
       if(manual)toastSafe('تم حفظ نسخة داخل التطبيق');
       return true;
