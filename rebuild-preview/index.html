@@ -12,20 +12,20 @@
 <meta name="theme-color" content="#1a1a2e">
 <meta name="msapplication-TileColor" content="#1a1a2e">
 <meta name="description" content="Haydar Pack order, clients, factories and invoices manager">
-<script src="config.js?v=production_20261119_wallet_docs_1"></script>
-<link rel="icon" type="image/png" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261119_wallet_docs_1">
-<link rel="apple-touch-icon" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261119_wallet_docs_1">
-<link rel="manifest" href="manifest.webmanifest?v=production_20261119_wallet_docs_1">
+<script src="config.js?v=production_20261119_upload_only_1"></script>
+<link rel="icon" type="image/png" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261119_upload_only_1">
+<link rel="apple-touch-icon" sizes="192x192" href="hp-logo-v3-192.png?v=production_20261119_upload_only_1">
+<link rel="manifest" href="manifest.webmanifest?v=production_20261119_upload_only_1">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js" defer></script>
-<link rel="stylesheet" href="assets/css/styles.css?v=production_20261119_wallet_docs_1">
+<link rel="stylesheet" href="assets/css/styles.css?v=production_20261119_upload_only_1">
 </head>
 <body>
 <div class="app">
   <div class="topbar">
     <div class="logo-wrap">
-      <div class="logo-icon"><img class="hp-app-logo" src="hp-logo-v3-192.png?v=production_20261119_wallet_docs_1" alt="Haydar Pack"></div>
+      <div class="logo-icon"><img class="hp-app-logo" src="hp-logo-v3-192.png?v=production_20261119_upload_only_1" alt="Haydar Pack"></div>
       <div><div class="logo-name">Haydar Pack</div><div class="logo-sub">إدارة أوردرات ومصانع وفواتير</div></div>
     </div>
     <div class="top-actions">
@@ -254,7 +254,7 @@
   <button type="button" class="btn blue" onclick="saveBackupEndpoint()">حفظ رابط النسخ الاحتياطي</button>
   <div class="btn-row">
     <button class="btn green" id="backup-cloud-upload" onclick="createCloudBackup()">ارفع نسخة الآن</button>
-    <button class="btn" id="backup-cloud-restore" onclick="restoreLatestExternalBackup()">استرجع آخر نسخة من Google</button>
+    <span>للاسترجاع، نزّل ملف النسخة من Drive ثم اختر «استورد ملف JSON».</span>
   </div>
   <details class="card"><summary class="sec-label">سجل الحذف</summary><div id="hp-stage6-delete-log"></div></details>
   <button class="btn full" onclick="closeDrawer('dr-backup')">إغلاق</button>
@@ -271,15 +271,15 @@
   #cloud-loading-cover.hp-v29-forced-hide{display:none!important;}
 </style>
 <!-- V55 Lite Consolidation: keeps V49.1, V50, V51, V52, V53 repair, V54 docs; post-V49 modules are merged into one file to reduce file count. -->
-<script src="assets/js/01-core-base.js?v=production_20261119_wallet_docs_1"></script>
-<script src="assets/js/02-business-legacy.js?v=production_20261119_wallet_docs_1"></script>
-<script src="assets/js/03-boot-calc-print.js?v=production_20261119_wallet_docs_1"></script>
-<script src="assets/js/04-sync-import.js?v=production_20261119_wallet_docs_1"></script>
-<script src="assets/js/05-feature-patches.js?v=production_20261119_wallet_docs_1"></script>
-<script src="assets/js/06-data-protection-images-backup.js?v=production_20261119_wallet_docs_1"></script>
-<script src="assets/js/07-clients-final.js?v=production_20261119_wallet_docs_1"></script>
-<script src="assets/js/08-post49-final-modules.js?v=production_20261119_wallet_docs_1"></script>
-<script src="assets/js/09-local-first-final.js?v=production_20261119_wallet_docs_1"></script>
+<script src="assets/js/01-core-base.js?v=production_20261119_upload_only_1"></script>
+<script src="assets/js/02-business-legacy.js?v=production_20261119_upload_only_1"></script>
+<script src="assets/js/03-boot-calc-print.js?v=production_20261119_upload_only_1"></script>
+<script src="assets/js/04-sync-import.js?v=production_20261119_upload_only_1"></script>
+<script src="assets/js/05-feature-patches.js?v=production_20261119_upload_only_1"></script>
+<script src="assets/js/06-data-protection-images-backup.js?v=production_20261119_upload_only_1"></script>
+<script src="assets/js/07-clients-final.js?v=production_20261119_upload_only_1"></script>
+<script src="assets/js/08-post49-final-modules.js?v=production_20261119_upload_only_1"></script>
+<script src="assets/js/09-local-first-final.js?v=production_20261119_upload_only_1"></script>
 
 </body>
 </html>
