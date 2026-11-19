@@ -109,15 +109,16 @@
     (data.payments||[]).forEach(function(p){if(!clients[String(p.clientId)])errors.push('دفعة مرتبطة بعميل غير موجود: '+String(p.id))});
     return {ok:!errors.length,errors:errors,counts:counts(data)};
   }
-  function applyData(data,reason){
+  function applyData(data,reason,restore){
     var report=validate(data);if(!report.ok)throw new Error('تم رفض الملف: '+report.errors.slice(0,4).join(' — '));
     return createLocalSnapshot('before-'+reason).then(function(){
+      if(restore && (restore.oldStamp!==meta().lastLocalSaveAt || restore.oldData!==JSON.stringify(window.DB))) throw new Error('تغيرت بيانات الجهاز أثناء الاسترجاع');
       var incoming=cleanData(data);
       if(!writeJSON(LOCAL_KEY,incoming)) throw new Error('تعذر حفظ البيانات المستوردة على الجهاز');
       window.DB=incoming;
       DB=incoming;
       var status=meta();
-      status.lastLocalSaveAt=now();
+      status.lastLocalSaveAt=restore ? restore.date : now();
       saveMeta(status);
       return persistMirror(reason,false);
     }).then(function(){try{if(typeof migrate==='function')migrate();if(typeof refreshAll==='function')refreshAll()}catch(e){};return report});
@@ -145,25 +146,50 @@
     var bytes=crypto.getRandomValues(new Uint8Array(16));
     var token='lf_'+Array.from(bytes, function(b){return b.toString(16).padStart(2,'0')}).join('');
     var m=meta();m.lastCloudBackupAttemptAt=now();m.cloudBackupError='';saveMeta(m);
+    var snapshotStamp=m.lastLocalSaveAt || m.firstSnapshotAt || now();
+    if(!m.firstSnapshotAt){m.firstSnapshotAt=snapshotStamp;saveMeta(m)}
     return jsonp('health',{},12000).then(function(service){
       if(!service || service.service!=='haydar-upload-only' || !service.ok) throw new Error('رابط Google لا يشغّل إصدار الرفع المخصص للنسخ الاحتياطي');
-      return sendSnapshot(data,token,manual);
+      return sendSnapshot(data,token,manual,snapshotStamp);
     }).catch(function(error){
       var status=meta();status.cloudBackupError=String(error.message||error);saveMeta(status);
       if(manual)toastSafe(status.cloudBackupError);
       return false;
     });
   }
-  function sendSnapshot(data,token,manual){
+  function sendSnapshot(data,token,manual,snapshotStamp){
     return new Promise(function(resolve){
       var iframe=document.createElement('iframe'),form=document.createElement('form'),name='hp_lf_'+Date.now();iframe.name=name;iframe.style.display='none';form.method='POST';form.action=backend;form.target=name;form.style.display='none';
-      var fields={action:'backupSnapshot',backupToken:token,data:JSON.stringify(data),appVersion:VERSION,siteVersion:SITE_VERSION,reason:manual?'manual-local-first':'daily-local-first'};
+      var fields={dataUpdatedAt:snapshotStamp,action:'backupSnapshot',backupToken:token,data:JSON.stringify(data),appVersion:VERSION,siteVersion:SITE_VERSION,reason:manual?'manual-local-first':'daily-local-first'};
       Object.keys(fields).forEach(function(k){var t=document.createElement('textarea');t.name=k;t.value=fields[k];form.appendChild(t)});document.body.appendChild(iframe);document.body.appendChild(form);form.submit();
       setTimeout(function(){pollBackup(token,manual).then(resolve).finally(function(){form.remove();iframe.remove()})},1800);
     });
   }
   function jsonp(action,params,timeout){return new Promise(function(resolve,reject){var cb='hpLf_'+Date.now()+'_'+Math.floor(Math.random()*99999),s=document.createElement('script'),done=false,timer;window[cb]=function(r){done=true;clean();resolve(r)};function clean(){clearTimeout(timer);try{delete window[cb]}catch(e){};if(s.parentNode)s.remove()}s.onerror=function(){if(!done){clean();reject(new Error('تعذر الاتصال'))}};var q='action='+encodeURIComponent(action)+'&callback='+encodeURIComponent(cb);Object.keys(params||{}).forEach(function(k){q+='&'+encodeURIComponent(k)+'='+encodeURIComponent(params[k])});s.src=backend+(backend.indexOf('?')>=0?'&':'?')+q+'&_='+Date.now();document.head.appendChild(s);timer=setTimeout(function(){if(!done){clean();reject(new Error('انتهت مهلة التأكيد'))}},timeout||12000)})}
   function pollBackup(token,manual){var tries=0;function run(){tries++;return jsonp('getBackupSnapshotStatus',{backupToken:token},10000).then(function(r){if(r&&r.ok&&r.backupToken===token&&r.status==='committed'){var m=meta();m.lastCloudBackupAt=r.createdAt||now();m.cloudBackupError='';saveMeta(m);setStatus('محفوظ على الجهاز — والـBackup الخارجي ناجح','ok');if(manual)toastSafe('تم إنشاء Backup خارجي بنجاح');return true}if(tries<4)return new Promise(function(res){setTimeout(res,1200*tries)}).then(run);throw new Error((r&&r.message)||'لم يتم تأكيد الـBackup')})}return run().catch(function(e){var m=meta();m.cloudBackupError=String(e.message||e);saveMeta(m);setStatus('الداتا محفوظة على الجهاز — تعذر الـBackup الخارجي','soft');if(manual)toastSafe('الداتا محفوظة محليًا، لكن تعذر تأكيد الـBackup الخارجي');return false})}
+  function restoreLatestCloudBackup(){
+    if(!backend){toastSafe('رابط Google Drive غير مضبوط');return Promise.resolve(false)}
+    if(!navigator.onLine){toastSafe('لا يوجد إنترنت — لا يمكن جلب الـBackup الخارجي');return Promise.resolve(false)}
+    setStatus('جاري فحص آخر Backup خارجي...','soft');
+    var guard={oldStamp:meta().lastLocalSaveAt,oldData:JSON.stringify(window.DB)};
+    return jsonp('latestBackupMeta',{},30000).then(function(info){
+      if(!info || !info.ok || !Date.parse(info.createdAt))throw new Error(info && info.message || 'تعذر تحديد تاريخ نسخة Google');
+      guard.date=info.createdAt;
+      if(useful(window.DB) && Date.parse(guard.oldStamp)>Date.parse(guard.date))throw new Error('بيانات الجهاز أحدث من نسخة Google. تم إيقاف الاسترجاع.');
+      return jsonp('getLatestLocalFirstBackup',{expected:info.snapshot},60000);
+    }).then(function(r){
+      if(!r||!r.ok||!r.data)throw new Error((r&&r.message)||'لم يتم العثور على Backup خارجي صالح');
+      var data=extract(r.data),report=validate(data);
+      if(!report.ok)throw new Error('الـBackup الخارجي غير صالح: '+report.errors.slice(0,4).join(' — '));
+      var c=r.counts||report.counts||counts(data),when=r.createdAt?new Date(r.createdAt).toLocaleString('ar-EG'):'غير محدد';
+      var message='تم العثور على آخر Backup خارجي بتاريخ: '+when+'\n\nالعملاء: '+(c.clients||0)+'\nالأوردرات: '+(c.orders||0)+'\nالدفعات: '+(c.payments||0)+'\nالمستندات: '+(c.documents||0)+'\n\nسيتم حفظ لقطة أمان من بيانات هذا الجهاز ثم استبدالها. هل تريد الاسترجاع؟';
+      if(!confirm(message)){setStatus('تم إلغاء الاسترجاع — الداتا الحالية لم تتغير','ok');return false}
+      return applyData(data,'cloud-backup-restore',guard).then(function(){
+        var m=meta();m.lastCloudRestoreAt=now();m.lastCloudRestoreSource=r.fileName||'';saveMeta(m);
+        setStatus('تم استرجاع الـBackup الخارجي وحفظه على هذا الجهاز','ok');toastSafe('تم استرجاع آخر Backup خارجي بنجاح');return true;
+      });
+    }).catch(function(e){setStatus('تعذر استرجاع الـBackup الخارجي','err');toastSafe(e.message||'فشل الاسترجاع');return false});
+  }
   function maybeDailyBackup(){
     if(!backend || !backupReady || !navigator.onLine || document.hidden || backupInFlight) return;
     clearTimeout(backupTimer);
@@ -189,7 +215,7 @@
     else if(status.cloudBackupError) cloudStatus+=' تعذر تأكيد الرفع: '+status.cloudBackupError;
     else cloudStatus+=' النسخ اليومي مفعّل عند فتح البرنامج وتوفر الإنترنت.';
     show('backup-status',cloudStatus);
-    ['backup-cloud-upload'].forEach(function(id){
+    ['backup-cloud-upload','backup-cloud-restore'].forEach(function(id){
       var button=$(id);
       if(button)button.disabled=!backend||!navigator.onLine||!!backupInFlight;
     });
@@ -247,7 +273,14 @@
   window.importCloudBackup=importFile;
   window.refreshCloudData=function(){toastSafe('لا يوجد تحميل تلقائي. استخدم استيراد JSON لنقل الداتا بين الأجهزة.');return Promise.resolve(false)};
   window.loadFromDrive=window.refreshCloudData;
-  window.HP_LOCAL_STORAGE={version:VERSION,open:openIDB,persist:persistMirror,snapshot:createLocalSnapshot,validate:validate,applyData:applyData,counts:counts,meta:meta,editEndpoint:editEndpoint,renderPanel:updatePanel,saveLocal:localSave,cloudBackup:postCloudSnapshot};
+  window.testBackupConnection=function(){
+    if(!backend || !navigator.onLine){toastSafe('راجع رابط Google واتصال الإنترنت');return}
+    return jsonp('health',{},15000).then(function(r){
+      toastSafe(r && r.ok && r.service==='haydar-upload-only'?'الاتصال بخدمة Google يعمل':'رابط النسخ غير صحيح');
+    }).catch(function(){toastSafe('تعذر الاتصال بخدمة Google')});
+  };
+  window.restoreLatestExternalBackup=restoreLatestCloudBackup;
+  window.HP_LOCAL_STORAGE={version:VERSION,endpoint:function(){return backend},open:openIDB,persist:persistMirror,snapshot:createLocalSnapshot,validate:validate,applyData:applyData,counts:counts,meta:meta,editEndpoint:editEndpoint,renderPanel:updatePanel,saveLocal:localSave,cloudBackup:postCloudSnapshot};
   window.addEventListener('online',maintainBackups);
   window.addEventListener('offline',updatePanel);
   window.createDeviceBackup=function(){return deviceBackup(true)};

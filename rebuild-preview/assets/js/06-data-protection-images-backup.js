@@ -269,7 +269,7 @@
   function n(v){var x=parseFloat(v);return isNaN(x)?0:x}
   function safe(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]})}
   function normalizeUrl(url){url=String(url||'').trim().replace(/\s+/g,'').replace(/[?#].*$/,'').replace(/\/+$/,'');var m=url.match(/^(https:\/\/script\.google\.com\/macros\/s\/[^\/]+)(?:\/(exec|dev))?$/);return m?m[1]+'/exec':''}
-  function backendUrl(){var u='';try{u=HPPreviewStorage.getItem(URL_KEY)||HPPreviewStorage.getItem(OLD_URL_KEY)||''}catch(e){} if(!u&&typeof window.HP_APPS_SCRIPT_URL==='string')u=window.HP_APPS_SCRIPT_URL;u=normalizeUrl(u)||FIXED_URL;try{HPPreviewStorage.setItem(URL_KEY,u);HPPreviewStorage.setItem(OLD_URL_KEY,u)}catch(e){} window.HP_APPS_SCRIPT_URL=u;return u}
+  function backendUrl(){return window.HP_LOCAL_STORAGE.endpoint()}
   function jsonp(action,params,timeoutMs){return new Promise(function(resolve,reject){var url=backendUrl(),cb='hpV40_'+Date.now()+'_'+Math.floor(Math.random()*1000000),q='action='+encodeURIComponent(action)+'&callback='+encodeURIComponent(cb)+'&_='+Date.now();params=params||{};Object.keys(params).forEach(function(k){q+='&'+encodeURIComponent(k)+'='+encodeURIComponent(params[k])});var script=document.createElement('script'),done=false,timer;window[cb]=function(res){done=true;cleanup();resolve(res)};function cleanup(){try{delete window[cb]}catch(e){window[cb]=undefined}if(script&&script.parentNode)script.parentNode.removeChild(script);clearTimeout(timer)}script.onerror=function(){if(!done){cleanup();reject(new Error('تعذر الاتصال بصور Google'))}};timer=setTimeout(function(){if(!done){cleanup();reject(new Error('تحميل/رفع الصور بطيء — سيعاد تلقائيًا'))}},timeoutMs||35000);script.src=url+(url.indexOf('?')>=0?'&':'?')+q;document.head.appendChild(script)})}
   function postForm(action,fields,waitMs){return new Promise(function(resolve){var url=backendUrl(),iframeName='hp_v40_img_post_'+Date.now();var iframe=document.createElement('iframe');iframe.name=iframeName;iframe.style.display='none';var form=document.createElement('form');form.method='POST';form.action=url;form.target=iframeName;form.style.display='none';form.acceptCharset='UTF-8';fields=fields||{};fields.action=action;Object.keys(fields).forEach(function(k){var t=document.createElement('textarea');t.name=k;t.value=String(fields[k]==null?'':fields[k]);form.appendChild(t)});document.body.appendChild(iframe);document.body.appendChild(form);form.submit();setTimeout(function(){try{form.remove();iframe.remove()}catch(e){}resolve({ok:true})},waitMs||2600)})}
   function readIndex(){try{var a=JSON.parse(HPPreviewStorage.getItem(IMG_INDEX_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return []}}
@@ -281,7 +281,7 @@
   function deQueue(id){saveQueue(readQueue().filter(function(x){return x!==id}))}
   function imgKey(id){return IMG_PREFIX+id}
   function makeId(kind){return 'img_'+String(kind||'image').replace(/[^a-z0-9_-]/gi,'').slice(0,16)+'_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9)}
-  function saveLocalImage(item){if(!item||!item.id||!item.data)return null;item.createdAt=item.createdAt||now();item.updatedAt=now();try{HPPreviewStorage.setItem(imgKey(item.id),JSON.stringify(item));addIndex(item.id);queueImage(item.id);return item}catch(e){console.error(e);toastSafe('مساحة الجهاز قربت تتملي بسبب الصور — سيتم حفظ المرجع فقط');return item}}
+  function saveLocalImage(item){if(!item||!item.id||!item.data)return null;item.createdAt=item.createdAt||now();item.updatedAt=now();try{HPPreviewStorage.setItem(imgKey(item.id),JSON.stringify(item));addIndex(item.id);queueImage(item.id);return item}catch(e){console.error(e);toastSafe('تعذر حفظ الصورة على الجهاز. راجع المساحة المتاحة');throw e}}
   function getLocalImage(id){try{return JSON.parse(HPPreviewStorage.getItem(imgKey(id))||'null')}catch(e){return null}}
   function markUploaded(id,meta){var it=getLocalImage(id);if(it){it.uploaded=true;it.uploadedAt=now();it.remote=meta||{};try{HPPreviewStorage.setItem(imgKey(id),JSON.stringify(it))}catch(e){}}deQueue(id);updateImagePanel()}
   function isDataUrl(s){return typeof s==='string'&&/^data:image\//.test(s)}
@@ -310,12 +310,29 @@
   if(typeof oldOpenOrderForm==='function'){
     window.openOrderForm=function(id){var r=oldOpenOrderForm.apply(this,arguments);setTimeout(function(){try{if(currentDesignImage&&currentDesignImage.id&&!currentDesignImage.data){var local=getLocalImage(currentDesignImage.id);if(local&&local.data){var img=$('o-design-preview');if(img){img.src=local.data;img.classList.remove('hide')}}else{loadImageData(currentDesignImage.id).then(function(src){var img=$('o-design-preview');if(img){img.src=src;img.classList.remove('hide')}}).catch(function(){})}}}catch(e){}},100);return r};
   }
-  async function processQueue(){if(processing)return;var q=readQueue();if(!q.length){updateImagePanel();return}if(!navigator.onLine){scheduleImageUpload(10000);return}processing=true;try{for(var i=0;i<Math.min(3,q.length);i++){var id=q[i],it=getLocalImage(id);if(!it||!it.data){deQueue(id);continue}try{await postForm('imagePut',{id:it.id,kind:it.kind||'image',name:it.name||it.id,type:it.type||'image/jpeg',size:it.size||it.data.length,data:it.data},2800);var meta=await jsonp('imageMeta',{id:it.id},25000);if(meta&&meta.ok){markUploaded(id,meta)}else throw new Error((meta&&meta.message)||'لم يتم تأكيد رفع الصورة')}catch(e){console.warn('image upload retry',e);scheduleImageUpload(20000);break}}}finally{processing=false;updateImagePanel();if(readQueue().length)scheduleImageUpload(12000)}}
+  async function processQueue(){if(processing || !backendUrl())return;var q=readQueue();if(!q.length){updateImagePanel();return}if(!navigator.onLine){scheduleImageUpload(10000);return}processing=true;try{for(var i=0;i<Math.min(3,q.length);i++){var id=q[i],it=getLocalImage(id);if(!it||!it.data){deQueue(id);continue}try{await postForm('imagePut',{id:it.id,kind:it.kind||'image',name:it.name||it.id,type:it.type||'image/jpeg',size:it.size||it.data.length,data:it.data},2800);var meta=await jsonp('imageGet',{id:it.id},45000);if(meta&&meta.ok&&meta.data===it.data){delete meta.data;}else{throw new Error('تعذر مطابقة محتوى الصورة على Google')}if(meta&&meta.ok){markUploaded(id,meta)}else throw new Error((meta&&meta.message)||'لم يتم تأكيد رفع الصورة')}catch(e){console.warn('image upload retry',e);scheduleImageUpload(20000);break}}}finally{processing=false;updateImagePanel();if(readQueue().length)scheduleImageUpload(12000)}}
   function scheduleImageUpload(delay){clearTimeout(uploadTimer);uploadTimer=setTimeout(processQueue,delay==null?1800:delay)}
   function imageStats(){var ids=readIndex(),q=readQueue(),uploaded=0,local=0,bytes=0;ids.forEach(function(id){var it=getLocalImage(id);if(it){local++;bytes+=n(it.size)||(it.data?it.data.length:0);if(it.uploaded)uploaded++}});return {total:ids.length,local:local,uploaded:uploaded,queue:q.length,bytes:bytes}}
   function updateImagePanel(){var s=imageStats();var line=$('hp-v40-image-line');if(line)line.textContent='الصور المفصولة: '+s.total+' — مرفوع: '+s.uploaded+' — في انتظار الرفع: '+s.queue+' — كاش محلي تقريبًا: '+Math.round(s.bytes/1024)+' KB'}
   function injectPanel(){var target=document.querySelector('#dr-sync .drawer')||document.querySelector('#dr-settings .drawer');if(!target)return;var old=$('hp-v40-image-panel');if(old)old.remove();var html='<div id="hp-v40-image-panel" class="alert green" style="border-width:4px;margin:12px 0"><div style="font-weight:900;font-size:18px;margin-bottom:6px">V40 فصل الصور وتسريع المزامنة</div><div id="hp-v40-image-line">...</div><div class="btn-row" style="margin-top:10px"><button class="btn green" onclick="hpV40ImageCheck()"><i class="ti ti-photo-check"></i> فحص الصور</button><button class="btn blue" onclick="hpV40UploadImagesNow()"><i class="ti ti-cloud-up"></i> رفع الصور المعلقة الآن</button></div><div style="font-size:14px;margin-top:8px">الإيصالات وصور التصميم الجديدة لا تدخل داخل ملف الداتا الرئيسي؛ ده يقلل البطء وخطر فشل المزامنة.</div></div>';var anchor=$('hp-v39-guard-panel')||target.querySelector('.cloud-status-grid')||target.children[2];if(anchor)anchor.insertAdjacentHTML('afterend',html);else target.insertAdjacentHTML('afterbegin',html);updateImagePanel()}
-  window.hpV40ImageCheck=function(){migrateImagesInDB('manual-check');processQueue();updateImagePanel();toastSafe('تم فحص الصور وتشغيل الرفع التلقائي')};
+  window.hpV40ImageCheck=async function(){
+    if(!backendUrl() || !navigator.onLine){toastSafe('راجع الاتصال بجوجل');return}
+    let good=0, missing=0;
+    const ids=new Set(readIndex());
+    const data=db();
+    for(const record of [].concat(data.orders||[],data.payments||[],data.transfers||[])){
+      const img=record.designImage || record.receipt;
+      if(img && img.id)ids.add(img.id);
+    }
+    for(const id of ids){
+      try{
+        const local=getLocalImage(id), remote=await jsonp('imageGet',{id:id},45000);
+        if(!remote.ok || !remote.data || (local && local.data!==remote.data))throw Error();
+        good++;
+      }catch(e){missing++;if(getLocalImage(id))queueImage(id)}
+    }
+    toastSafe('صور مؤكدة على Google: '+good+' — تحتاج مراجعة: '+missing);
+  };
   window.hpV40UploadImagesNow=function(){processQueue();toastSafe('جاري رفع الصور المعلقة تلقائيًا')};
   var oldOpenSync=window.openSync;
   window.openSync=function(){var r=oldOpenSync?oldOpenSync.apply(this,arguments):undefined;setTimeout(function(){injectPanel();updateImagePanel()},150);return r};
