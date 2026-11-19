@@ -1,5 +1,5 @@
-// ضع رابط نشر Apps Script المخصص لهذه النسخة بعد ضبط صلاحيات الوصول.
-window.HP_BACKUP_DEFAULT_URL = '';
+// يمكن تغيير رابط النسخ الاحتياطي لكل جهاز من الإعدادات.
+window.HP_BACKUP_DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbz-SghE63_75pj2O1QrKbQR-rmFNKQXunOfkgnmZYyAJL32BlXuwNHp_bTth2fSdm3hOQ/exec';
 window.HPPreviewStorage = {
   getItem(key) { return window.localStorage.getItem('haydar-preview:' + key); },
   setItem(key, value) { window.localStorage.setItem('haydar-preview:' + key, value); },
