@@ -1,4 +1,4 @@
-const HP_RELEASE = 'production_20261118_finance_review_2';
+const HP_RELEASE = 'production_20261119_wallet_docs_1';
 const HP_CACHE = 'haydar-preview-pwa-' + HP_RELEASE;
 const HP_INDEX = './index.html?v=' + HP_RELEASE;
 const HP_OFFLINE = './offline.html?v=' + HP_RELEASE;

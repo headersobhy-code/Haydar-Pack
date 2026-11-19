@@ -3,6 +3,7 @@
   'use strict';
   var storage=window.HP_LOCAL_STORAGE;
   window.openSync=function(){
+    storage.editEndpoint();
     storage.renderPanel();
     if(typeof window.renderDeletedHistory==='function')window.renderDeletedHistory();
     openDrawer('dr-backup');

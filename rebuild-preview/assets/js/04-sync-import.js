@@ -15,7 +15,24 @@
   var BACKUP_INTERVAL=24*60*60*1000;
   var SAVE_DELAY=80;
   var MAX_SNAPSHOTS=10;
-  var backend=(String(window.HP_APPS_SCRIPT_URL||'')).trim();
+  var endpointKey='haydar_backup_endpoint';
+  var backend=readJSON(endpointKey,'');
+  function editEndpoint(){var field=$('backup-endpoint');if(field)field.value=backend}
+  window.saveBackupEndpoint=function(){
+    if(backupInFlight){toastSafe('انتظر انتهاء الرفع الحالي');return}
+    var value=$('backup-endpoint').value.trim();
+    if(value && !/^https:\/\/script\.google\.com\/macros\/s\/[a-zA-Z0-9_-]+\/exec$/.test(value)){
+      toastSafe('أدخل رابط نشر Google المنتهي بـ /exec');return;
+    }
+    if(!writeJSON(endpointKey,value)){toastSafe('تعذر حفظ الرابط على الجهاز');return}
+    if(backend!==value){
+      backend=value;
+      var status=meta();
+      status.lastCloudBackupAt='';status.lastCloudBackupAttemptAt='';status.cloudBackupError='';
+      saveMeta(status);
+    }
+    updatePanel();maybeDailyBackup();toastSafe(value?'تم حفظ الرابط على هذا الجهاز':'تم فصل Google Drive');
+  };
   var idb=null, mirrorTimer=null, backupTimer=null, booted=false, saveSerial=0;
   var deviceBackupInFlight=null;
   window.HP_MUTATION_SYNC=true;
@@ -236,7 +253,7 @@
   window.importCloudBackup=importFile;
   window.refreshCloudData=function(){toastSafe('لا يوجد تحميل تلقائي. استخدم استيراد JSON لنقل الداتا بين الأجهزة.');return Promise.resolve(false)};
   window.loadFromDrive=window.refreshCloudData;
-  window.HP_LOCAL_STORAGE={version:VERSION,open:openIDB,persist:persistMirror,snapshot:createLocalSnapshot,validate:validate,applyData:applyData,counts:counts,meta:meta,renderPanel:updatePanel,saveLocal:localSave,cloudBackup:postCloudSnapshot,restoreLatestExternal:restoreLatestCloudBackup};
+  window.HP_LOCAL_STORAGE={version:VERSION,open:openIDB,persist:persistMirror,snapshot:createLocalSnapshot,validate:validate,applyData:applyData,counts:counts,meta:meta,editEndpoint:editEndpoint,renderPanel:updatePanel,saveLocal:localSave,cloudBackup:postCloudSnapshot,restoreLatestExternal:restoreLatestCloudBackup};
   window.addEventListener('online',maintainBackups);
   window.addEventListener('offline',updatePanel);
   window.createDeviceBackup=function(){return deviceBackup(true)};

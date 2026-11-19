@@ -298,16 +298,16 @@
     var first=orders[0]||{}, c=getClient(first.clientId), docNo=(mode==='quote'?'QT':'INV')+'-'+today().replace(/-/g,'')+'-'+String(Date.now()).slice(-4);
     ws.addRow([]); ws.addRow(['التاريخ',today(),'رقم المستند',docNo,'العميل',c.name||'','الهاتف',c.phone||'','العنوان',c.addr||'']);
     ws.addRow([]);
-    var headers=['كود الأوردر','اسم الصنف','نوع الشنطة','لون الشنطة','لون اليد','عدد الألوان','وجه','الكمية','سعر الشنطة','القيمة']; ws.addRow(headers);
+    var headers=['كود الأوردر','اسم الصنف','نوع الشنطة','لون الشنطة','لون اليد','عدد الألوان','وجه','الكمية','سعر الشنطة','القيمة','لون الطباعة']; ws.addRow(headers);
     var headerRow=ws.lastRow; headerRow.font={bold:true,color:{argb:'FFFFFFFF'}}; headerRow.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1A1A2E'}};
     var gross=0,disc=0,net=0;
     orders.forEach(function(o){
       var qty=mode==='quote'?n(o.qty):(typeof billQty==='function'?billQty(o):n(o.qty)), price=n(o.price), line=qty*price, ak=n(o.aklashe), d=discount(o);
       gross+=line+ak; disc+=d; net+=Math.max(0,line+ak-d);
-      ws.addRow([o.code||'',itemName(o),o.type||'',o.color||'',o.handle||'بدون',orderColorCount(o),orderFace(o),qty,price,line]);
+      ws.addRow([o.code||'',itemName(o),o.type||'',o.color||'',o.handle||'بدون',orderColorCount(o),orderFace(o),qty,price,line,o.print||'']);
       if(ak>0) ws.addRow([o.code||'','اكلاشيه','اكلاشيه','بدون','بدون','-','-',1,ak,ak]);
     });
-    ws.addRow([]); ws.addRow(['الإجمالي قبل الخصم','','','','','','','','',gross]); ws.addRow(['خصم الفاتورة','','','','','','','','',disc]); ws.addRow(['الإجمالي بعد الخصم','','','','','','','','',net]);
+    ws.addRow([]); if(disc>0){ws.addRow(['الإجمالي قبل الخصم','','','','','','','','',gross]); ws.addRow(['خصم الفاتورة','','','','','','','','',disc]);} ws.addRow([disc>0?'الإجمالي بعد الخصم':'الإجمالي','','','','','','','','',net]);
     if(mode==='invoice'){var dep=orders.reduce(function(s,o){return s+n(o.deposit)},0); ws.addRow(['العربون المسجل','','','','','','','','',dep]); ws.addRow(['الصافي المستحق','','','','','','','','',Math.max(0,net-dep)]);}
     ws.eachRow(function(row){row.height=Math.max(row.height||18,20); row.eachCell(setBorder);});
     [9,10].forEach(function(col){ws.getColumn(col).numFmt='#,##0.00 "ج"'});
@@ -709,16 +709,16 @@
     ws.mergeCells('A4:J4'); ws.getCell('A4').value=mode==='quote'?'عرض سعر':'فاتورة بيع'; ws.getCell('A4').font={bold:true,size:18,underline:true}; ws.getCell('A4').alignment={horizontal:'center'};
     var first=orders[0]||{}, c=getClient(first.clientId), docNo=(mode==='quote'?'QT':'INV')+'-'+today().replace(/-/g,'')+'-'+String(Date.now()).slice(-4);
     ws.addRow([]); ws.addRow(['التاريخ',today(),'رقم المستند',docNo,'العميل',c.name||'','الهاتف',c.phone||'','العنوان',c.addr||'']); ws.addRow([]);
-    var headers=['كود الأوردر','اسم الصنف','نوع الشنطة','لون الشنطة','لون اليد','عدد الألوان','وجه','الكمية','سعر الشنطة','القيمة']; ws.addRow(headers);
+    var headers=['كود الأوردر','اسم الصنف','نوع الشنطة','لون الشنطة','لون اليد','عدد الألوان','وجه','الكمية','سعر الشنطة','القيمة','لون الطباعة']; ws.addRow(headers);
     var headerRow=ws.lastRow; headerRow.font={bold:true,color:{argb:'FFFFFFFF'}}; headerRow.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF1A1A2E'}};
     var gross=0,disc=0,net=0;
     orders.forEach(function(o){
       var qty=mode==='quote'?n(o.qty):(typeof billQty==='function'?billQty(o):n(o.qty)), price=n(o.price), line=qty*price, ak=n(o.aklashe), d=discount(o), lineGross=line+ak;
       gross+=lineGross; disc+=d; net+=Math.max(0,lineGross-d);
-      ws.addRow([o.code||'',itemName(o),o.type||'',o.color||'',o.handle||'بدون',orderColorCount(o),orderFace(o),qty,price,line]);
+      ws.addRow([o.code||'',itemName(o),o.type||'',o.color||'',o.handle||'بدون',orderColorCount(o),orderFace(o),qty,price,line,o.print||'']);
       if(ak>0) ws.addRow([o.code||'','اكلاشيه','اكلاشيه','بدون','بدون','-','-',1,ak,ak]);
     });
-    ws.addRow([]); ws.addRow(['الإجمالي قبل الخصم','','','','','','','','',gross]); ws.addRow(['خصم الفاتورة','','','','','','','','',disc]); ws.addRow(['الإجمالي بعد الخصم','','','','','','','','',net]);
+    ws.addRow([]); if(disc>0){ws.addRow(['الإجمالي قبل الخصم','','','','','','','','',gross]); ws.addRow(['خصم الفاتورة','','','','','','','','',disc]);} ws.addRow([disc>0?'الإجمالي بعد الخصم':'الإجمالي','','','','','','','','',net]);
     if(mode==='invoice'){var dep=orders.reduce(function(s,o){return s+n(o.deposit)},0); ws.addRow(['العربون المسجل','','','','','','','','',dep]); ws.addRow(['الصافي المستحق','','','','','','','','',Math.max(0,net-dep)]);}
     ws.eachRow(function(row){row.height=Math.max(row.height||18,20); row.eachCell(setBorder);});
     [9,10].forEach(function(col){ws.getColumn(col).numFmt='#,##0.00 "ج"'});
